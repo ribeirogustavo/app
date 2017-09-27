@@ -1,0 +1,40 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="8dp"
+    android:paddingTop="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/nomeestudo" />
+
+    <EditText
+        android:id="@+id/nomeestudo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textCapSentences"/>
+
+    <TextView
+        android:id="@+id/campo_cliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cliente" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autocompletecliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textNoSuggestions"/>
+
+    <!--
+
+    <Spinner
+        android:id="@+id/spinner_clientes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"/>-->
+</LinearLayout>

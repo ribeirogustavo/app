@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/group_menu_nav"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/Nav_Menu_Cliente"
+            android:checkable="true"
+            android:icon="@drawable/ic_clients"
+            android:title="@string/clientes" />
+        <item
+            android:id="@+id/Nav_Menu_Estudo"
+            android:checkable="true"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="@string/estudo" />
+        <item
+            android:id="@+id/Orcamento"
+            android:checkable="true"
+            android:icon="@android:drawable/ic_dialog_dialer"
+            android:title="@string/orcamento" />
+        <item
+            android:id="@+id/Pedido"
+            android:checkable="true"
+            android:icon="@android:drawable/ic_menu_always_landscape_portrait"
+            android:title="@string/pedido" />
+        <item
+            android:id="@+id/Nav_Menu_Luximetro"
+            android:checkable="true"
+            android:icon="@drawable/ic_bulb"
+            android:title="@string/luximetro" />
+    </group>
+</menu>
