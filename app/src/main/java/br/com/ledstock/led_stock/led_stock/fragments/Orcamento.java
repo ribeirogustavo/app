@@ -4,9 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
@@ -16,7 +19,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
 import br.com.ledstock.led_stock.R;
+import br.com.ledstock.led_stock.led_stock.activity.ActivityEmpty;
+import br.com.ledstock.led_stock.led_stock.adapter.OrcamentosAdapter;
+import br.com.ledstock.led_stock.led_stock.domain.LedStockDB;
 
 public class Orcamento extends android.support.v4.app.Fragment {
 
@@ -62,60 +69,54 @@ public class Orcamento extends android.support.v4.app.Fragment {
     }
 
     private void LoadRecyclerView() {
-        /*
+
         LedStockDB db = new LedStockDB(getActivity());
-        Cursor c = db.Select_ListEstudos();
+        Cursor c = db.Select_ListOrcamentos();
 
         if (c != null) {
 
-            recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewEstudo);
+            recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewOrcamento);
             recyclerView.setHasFixedSize(true);
             RecyclerView.LayoutManager mLayoutManger = new LinearLayoutManager(getActivity());
             recyclerView.setLayoutManager(mLayoutManger);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-            recyclerView.setAdapter(new EstudosAdapter(getActivity(), c, onClickEstudo()));
+            recyclerView.setAdapter(new OrcamentosAdapter(getActivity(), c, onClickOrcamento()));
 
         }
-
         db.close();
-        */
     }
 
     private void LoadRecyclerViewQuery(String Query) {
-        /*
+
         LedStockDB db = new LedStockDB(getActivity());
-        Cursor c = db.getPesquisarClienteActivityEstudos(Query);
+        Cursor c = db.getPesquisarClienteActivityOrcamentos(Query);
 
         if (c != null) {
-            recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewEstudo);
+            recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewOrcamento);
             recyclerView.setHasFixedSize(true);
             RecyclerView.LayoutManager mLayoutManger = new LinearLayoutManager(getActivity());
             recyclerView.setLayoutManager(mLayoutManger);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-            recyclerView.setAdapter(new EstudosAdapter(getActivity(), c, onClickEstudo()));
+            recyclerView.setAdapter(new OrcamentosAdapter(getActivity(), c, onClickOrcamento()));
         }
 
         db.close();
-        */
-
     }
 
-    /*
-    private EstudosAdapter.EstudosOnClickListener onClickEstudo() {
-        return new EstudosAdapter.EstudosOnClickListener() {
+    private OrcamentosAdapter.OrcamentosOnClickListener onClickOrcamento() {
+        return new OrcamentosAdapter.OrcamentosOnClickListener() {
             @Override
-            public void onClickEstudo(View view, int idx) {
+            public void onClickOrcamento(View view, Long idx) {
 
                 Intent intent = new Intent(getContext(), ActivityEmpty.class);
-                intent.putExtra("action", "content_estudo");
-                intent.putExtra("id_estudo", idx);
+                intent.putExtra("action", "content_orcamento");
+                intent.putExtra("id_orcamento", idx);
                 startActivity(intent);
             }
         };
     }
-    */
 
     @Override
     public void onDestroy() {
@@ -182,5 +183,4 @@ public class Orcamento extends android.support.v4.app.Fragment {
             LoadRecyclerView();
         }
     };
-
 }

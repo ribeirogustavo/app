@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/info"
+        android:icon="@drawable/ic_clients"
+        android:title="@string/cliente"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/desconto"
+        android:icon="@drawable/ic_money"
+        android:title="@string/aplicardesconto"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/enviar"
+        android:icon="@drawable/ic_mail_outline_white"
+        android:title="@string/enviarorcamento"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/pedido"
+        android:icon="@drawable/ic_check_white"
+        android:title="@string/pedido"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/excluir"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/delete"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,71 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="16dp">
+
+    <RadioGroup
+        android:id="@+id/radio_orcamento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp">
+
+        <RadioButton
+            android:id="@+id/radio_solucao_led"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/solucao_led" />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="12dp">
+
+        </View>
+
+        <RadioButton
+            android:id="@+id/radio_mao_de_obra"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/maodeobra" />
+    </RadioGroup>
+
+
+    <TextView
+        android:id="@+id/choose_radio_orcamento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/led" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autocompleteled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textNoSuggestions" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/quantidade" />
+
+    <EditText
+        android:id="@+id/quantidade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/descount" />
+
+    <EditText
+        android:id="@+id/descount_orcamento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal" />
+</LinearLayout>

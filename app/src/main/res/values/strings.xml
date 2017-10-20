@@ -6,6 +6,7 @@
     <string name="acesso">Acesso</string>
     <string name="app_name">LED STOCK</string>
     <string name="acessocompleto">Acesso Completo</string>
+    <string name="aplicardesconto">Aplicar Desconto</string>
 
     <!--   B   -->
     <string name="ButtonLogin">Login</string>
@@ -28,7 +29,10 @@
 
     <!--   D   -->
     <string name="descricao">Descrição</string>
+    <string name="descricaotwodot">Descrição:</string>
     <string name="delete">Excluir</string>
+    <string name="descount">Desconto em %</string>
+    <string name="descounttwodot">Desconto:</string>
 
     <!--   E   -->
     <string name="estudo">Estudo</string>
@@ -37,6 +41,7 @@
     <string name="endereco">Endereço</string>
     <string name="edit">Editar</string>
     <string name="email2">E-mail Secundário</string>
+    <string name="enviarorcamento">Enviar Orçamento</string>
     <string name="enviarestudo">Enviar Estudo</string>
     <string name="excluir">Excluir</string>
     <string name="economia">Economia:</string>
@@ -48,6 +53,7 @@
 
     <!--   I   -->
     <string name="investimento">Investimento:</string>
+    <string name="itensorcamentos">Itens nos Orçamentos:</string>
 
     <!--   L   -->
     <string name="luximetro">Luximetro</string>
@@ -55,6 +61,8 @@
     <string name="lampadas">Lâmpadas</string>
     <string name="led">LED</string>
     <string name="leds">LEDs</string>
+    <string name="listaleds">Lista de Leds</string>
+    <string name="listahandson">Lista de Mão de Obras</string>
 
     <!--   M   -->
     <string name="Menu_Nome">LED STOCK</string>
@@ -68,9 +76,11 @@
     <string name="nome">Nome</string>
     <string name="num">Numero</string>
     <string name="nav_drawer_username">LED STOCK</string>
+    <string name="numpendente">Carregando Numero..</string>
 
     <!--   O   -->
     <string name="orcamento">Orçamento</string>
+    <string name="orcamentos">Orçamentos</string>
     <string name="ok">OK</string>
 
     <!--   P   -->
@@ -88,6 +98,7 @@
 
     <!--   Q   -->
     <string name="quantidade">Quantidade</string>
+    <string name="quantidadetwodot">Quantidade:</string>
     <string name="qnt">Qnt:</string>
 
     <!--   R   -->

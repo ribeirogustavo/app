@@ -109,7 +109,7 @@ public class BaseActivity extends android.support.v7.app.AppCompatActivity {
                 navigationView = (NavigationView) findViewById(R.id.nav_view);
                 if (actionBar != null) {
                     //Seta o Título da Toolbar
-                    actionBar.setTitle(R.string.estudo);
+                    actionBar.setTitle(R.string.estudos);
                 }
                 //Checkar o item Clientes no NavDrawer
                 navigationView.setCheckedItem(R.id.Nav_Menu_Estudo);
@@ -126,7 +126,7 @@ public class BaseActivity extends android.support.v7.app.AppCompatActivity {
                 navigationView = (NavigationView) findViewById(R.id.nav_view);
                 if (actionBar != null) {
                     //Seta o Título da Toolbar
-                    actionBar.setTitle(R.string.orcamento);
+                    actionBar.setTitle(R.string.orcamentos);
                 }
                 //Checkar o item Orçamentos no NavDrawer
                 navigationView.setCheckedItem(R.id.Orcamento);

@@ -56,6 +56,8 @@ public class Sync extends Fragment {
         TextView mdo = (TextView) view.findViewById(R.id.sync_mdo);
         TextView ambiente = (TextView) view.findViewById(R.id.sync_ambiente);
         TextView usuario = (TextView) view.findViewById(R.id.sync_usuario);
+        TextView orcamento = (TextView) view.findViewById(R.id.sync_orcamento);
+        TextView itens_orcamento = (TextView) view.findViewById(R.id.sync_itensorc);
 
         LedStockDB db = new LedStockDB(getActivity());
 
@@ -107,6 +109,20 @@ public class Sync extends Fragment {
             c_usuario.close();
         } else {
             usuario.setText("0");
+        }
+        Cursor c_orcamentos = db.SelectOrcamentoInsertPending();
+        if (c_orcamentos != null) {
+            orcamento.setText(String.valueOf(c_orcamentos.getCount()));
+            c_orcamentos.close();
+        } else {
+            orcamento.setText("0");
+        }
+        Cursor c_itens = db.SelectItensOfOrcamentoInsertPending();
+        if (c_itens != null) {
+            itens_orcamento.setText(String.valueOf(c_itens.getCount()));
+            c_itens.close();
+        } else {
+            itens_orcamento.setText("0");
         }
 
         db.close();

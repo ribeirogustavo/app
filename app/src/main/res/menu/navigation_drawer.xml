@@ -12,17 +12,17 @@
             android:id="@+id/Nav_Menu_Estudo"
             android:checkable="true"
             android:icon="@android:drawable/ic_menu_agenda"
-            android:title="@string/estudo" />
+            android:title="@string/estudos" />
         <item
             android:id="@+id/Orcamento"
             android:checkable="true"
             android:icon="@android:drawable/ic_dialog_dialer"
-            android:title="@string/orcamento" />
+            android:title="@string/orcamentos" />
         <item
             android:id="@+id/Pedido"
             android:checkable="true"
             android:icon="@android:drawable/ic_menu_always_landscape_portrait"
-            android:title="@string/pedido" />
+            android:title="@string/pedidos" />
         <item
             android:id="@+id/Nav_Menu_Luximetro"
             android:checkable="true"

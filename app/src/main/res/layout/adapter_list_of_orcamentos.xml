@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    android:id="@+id/row_item_orcamento"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="5dp"
+    android:paddingEnd="7dp"
+    android:paddingLeft="7dp"
+    android:paddingRight="7dp"
+    android:paddingStart="7dp"
+    android:paddingTop="5dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:paddingBottom="6dp"
+        android:paddingEnd="2dp"
+        android:paddingRight="2dp"
+        android:textStyle="bold"
+        android:paddingLeft="2dp"
+        android:paddingStart="2dp"
+        android:paddingTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/dark_grey"
+        android:textColor="@color/white"
+        android:text="@string/descricaotwodot"
+        android:textSize="18sp" />
+
+    <!-- A CardView that contains a TextView -->
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:foreground="?attr/selectableItemBackground"
+        android:paddingTop="2dp"
+        app:cardElevation="3dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="false"
+        card_view:cardBackgroundColor="@color/background_card_view"
+        card_view:cardCornerRadius="2dp"
+        card_view:cardElevation="6dp">
+
+
+
+        <LinearLayout
+            android:id="@+id/linearlayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="6dp"
+                    android:paddingEnd="2dp"
+                    android:paddingRight="2dp"
+                    android:textStyle="bold"
+                    android:paddingLeft="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/descricaotwodot"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/itens_descricao"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="6dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="6dp"
+                    android:paddingEnd="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingLeft="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:textStyle="bold"
+                    android:text="@string/quantidadetwodot"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/itens_quantidade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="6dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/descr_desconto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="6dp"
+                    android:paddingEnd="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingLeft="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:textStyle="bold"
+                    android:text="@string/descounttwodot"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/itens_desconto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="6dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="1dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+</LinearLayout>

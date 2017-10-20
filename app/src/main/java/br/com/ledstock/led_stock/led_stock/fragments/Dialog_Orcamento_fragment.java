@@ -13,21 +13,28 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
 import android.widget.Toast;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
 import br.com.ledstock.led_stock.R;
+import br.com.ledstock.led_stock.led_stock.activity.ActivityEmpty;
+import br.com.ledstock.led_stock.led_stock.activity.BaseActivity;
+import br.com.ledstock.led_stock.led_stock.activity.Container_Main;
 import br.com.ledstock.led_stock.led_stock.domain.LedStockDB;
+import br.com.ledstock.led_stock.led_stock.services.LedService;
 
 public class Dialog_Orcamento_fragment extends DialogFragment {
 
     private static String action;
-    private static long ID_ESTUDO;
+    private static long ID_ORCAMENTO;
     private static Activity activity;
     private static long ID_CLIENTE;
     private long ClientIndex;
@@ -55,7 +62,7 @@ public class Dialog_Orcamento_fragment extends DialogFragment {
         if (act == 0) {
             action = "add";
         } else if (act == 1) {
-            ID_ESTUDO = id;
+            ID_ORCAMENTO = id;
             action = "edit";
         } else if (act == 2) {
             ID_CLIENTE = id;
@@ -176,16 +183,19 @@ public class Dialog_Orcamento_fragment extends DialogFragment {
                                 SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
                                 String formattedDate = df.format(c.getTime());
 
-                                /*
-                                LedStockDB insert_estudo = new LedStockDB(activity);
-                                long ID_ESTUDO = insert_estudo.Insert_Estudo(descricao.getText().toString(), String.valueOf(ClientIndex), null, null, formattedDate, "0", "0", null, "1");
-                                LedService insertremote = new LedService();
-                                insertremote.InsertEstudoRemote(ID_ESTUDO);
-                                */
 
-                                Intent intent = new Intent();
+                                LedStockDB insert_orcamento = new LedStockDB(activity);
+                                long ID_ORCAMENTO = insert_orcamento.Insert_Orcamento(String.valueOf(ClientIndex), null, "00000000", null, formattedDate, "0", "0", null, "1");
+                                LedService insertremote = new LedService();
+                                insertremote.InsertOrcamentoRemote(ID_ORCAMENTO);
+
+                                Intent intent = new Intent(activity, ActivityEmpty.class);
+                                intent.putExtra("action", "content_orcamento");
+                                intent.putExtra("id_orcamento", ID_ORCAMENTO);
+
                                 intent.setAction("REFRESH_ORCAMENTOS");
-                                getActivity().sendBroadcast(intent);
+                                activity.sendBroadcast(intent);
+                                activity.startActivity(intent);
 
                                 Toast.makeText(getActivity(), "Orçamento criado com Sucesso !", Toast.LENGTH_SHORT).show();
 
@@ -203,7 +213,7 @@ public class Dialog_Orcamento_fragment extends DialogFragment {
             builder.setTitle("Inserir Orçamento");
 
 
-        }    else if (action.equals("add_with_id")) {
+        } else if (action.equals("add_with_id")) {
             /*
 
             TextView textview = (TextView) view.findViewById(R.id.campo_cliente);

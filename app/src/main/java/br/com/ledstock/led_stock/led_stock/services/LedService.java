@@ -10,13 +10,16 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
 import br.com.ledstock.led_stock.led_stock.domain.Array_Clients;
 import br.com.ledstock.led_stock.led_stock.domain.LedStockDB;
 import br.com.ledstock.led_stock.led_stock.utils.AlarmUtil;
@@ -29,7 +32,9 @@ public class LedService extends Service {
 
 
     //Configura ambiente de Teste e ambiente de produção
-    public static final String url = Configuration.url_test;
+    //public static final String url = Configuration.url_test;
+    //public static final String url = Configuration.url_production;
+    public static final String url = Configuration.url_localhost;
     //Fim da Configuração Teste/Produção
 
     private final String url_post = url + "?{get_method}";
@@ -76,6 +81,13 @@ public class LedService extends Service {
     //Variáveis para Itens do Estudo
     private static boolean IIOFEST = false;
     private static boolean DIOFEST = false;
+    //Variáveis para Orçamentos
+    private static boolean IORC = false;
+    private static boolean EORC = false;
+    private static boolean DORC = false;
+    //Variáveis para Itens do Orçamento
+    private static boolean IIOFORC = false;
+    private static boolean DIOFORC = false;
 
     public int onStartCommand(Intent intent, int flags, int StartId) {
         return super.onStartCommand(intent, flags, StartId);
@@ -86,7 +98,7 @@ public class LedService extends Service {
         super.onCreate();
 
         context = getApplicationContext();
-        
+
         LoadContent();
 
         //Registra o Receiver para consultar o Banco de Dados Remotamente
@@ -117,6 +129,8 @@ public class LedService extends Service {
                 GetEstudo();
                 GetAmbientesOfEstudo();
                 GetItensOfEstudo();
+                GetOrcamento();
+                GetItensOfOrcamento();
             } catch (IOException e) {
                 Log.e(TAG, e.getMessage());
             } finally {
@@ -461,12 +475,82 @@ public class LedService extends Service {
         }.start();
     }
 
+    public void GetOrcamento() throws IOException {
+        new Thread() {
+            public void run() {
+                String json = "";
+                Global global = new Global();
+                LedStockDB db = new LedStockDB(context);
+
+                Map<String, String> mapParams = new HashMap<String, String>();
+                mapParams.put("KEY", key);
+                mapParams.put("action", "getOrcamento");
+                mapParams.put("user", global.getUsuario());
+                mapParams.put("last_id", db.SelectLastRemoteIDofOrcamento());
+                HttpHelper http = new HttpHelper();
+                try {
+                    json = http.doGet(url, mapParams, "UTF-8");
+                    if (!json.equals("")) {
+                        try {
+                            //Carrega a Matriz JSON com os HandsOn para dentro do DB interno
+                            JSONtoDBOrcamento(parserJSON(json));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    Intent intent = new Intent();
+                    intent.setAction("REFRESH_ORCAMENTOS");
+                    context.sendBroadcast(intent);
+                }
+                db.close();
+            }
+        }.start();
+    }
+
     private JSONArray parserJSON(String json) throws JSONException {
         if ((json != null) && (!json.equals(""))) {
             return new JSONArray(json);
         } else {
             return null;
         }
+    }
+
+    public void GetItensOfOrcamento() throws IOException {
+        new Thread() {
+            public void run() {
+                String json = "";
+                Global global = new Global();
+                LedStockDB db = new LedStockDB(context);
+
+                Map<String, String> mapParams = new HashMap<String, String>();
+                mapParams.put("KEY", key);
+                mapParams.put("action", "getItensOfOrcamento");
+                mapParams.put("user", global.getUsuario());
+                mapParams.put("last_id", db.SelectLastRemoteIDofItensOfOrcamento());
+                HttpHelper http = new HttpHelper();
+                try {
+                    json = http.doGet(url, mapParams, "UTF-8");
+                    if (!json.equals("")) {
+                        try {
+                            //Carrega a Matriz JSON com os Itens do Orçamento para dentro do DB interno
+                            JSONtoDBItensOfOrcamento(parserJSON(json));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    Intent intent = new Intent();
+                    intent.setAction("REFRESH_ITENS_ORCAMENTO");
+                    context.sendBroadcast(intent);
+                }
+                db.close();
+            }
+        }.start();
     }
 
     /***********************************************************************************************
@@ -2922,6 +3006,518 @@ public class LedService extends Service {
     }
 
     /***********************************************************************************************
+     * FUNÇÕES REFERENTES AO ORÇAMENTO
+     ***********************************************************************************************/
+
+    //Insere um Orçamento no Banco de Dados remoto
+    public void InsertOrcamentoRemote(final long id_orcamento) {
+        //Se tiver conexão com a internet, insere no banco de dados remoto
+        if (IsConected()) {
+            new Thread() {
+                public void run() {
+                    Global global = new Global();
+                    String getmethod1 = "KEY=" + key;
+                    String getmethod2 = "action=InsertOrcamento";
+                    String getmethod3 = "user=" + global.getUsuario();
+                    String new_url = url_post.replace("{get_method}", getmethod1 + "&" + getmethod2 + "&" + getmethod3);
+                    String json = "";
+
+                    LedStockDB db = new LedStockDB(context);
+                    Cursor c = db.SelectOrcamentoByID(String.valueOf(id_orcamento));
+
+                    if (c != null) {
+                        String id_cliente_remoto = c.getString(c.getColumnIndex("_id_client_remote"));
+
+                        if ((id_cliente_remoto != null) && (!id_cliente_remoto.equals(""))) {
+                            Map<String, String> mapParams = new HashMap<String, String>();
+                            mapParams.put("orcamento", c.getString(c.getColumnIndex("orcamento")));
+                            mapParams.put("id_cliente", id_cliente_remoto);
+                            mapParams.put("data", c.getString(c.getColumnIndex("data")));
+                            HttpHelper http = new HttpHelper();
+
+                            try {
+                                json = http.doPost(new_url, mapParams, "UTF-8");
+                                if (!json.equals("")) {
+                                    try {
+                                        //Carrega a Matriz JSON com os clientes para dentro do DB interno
+                                        JSONtoDBInsertOrcamentoRemoteID(parserJSON(json), String.valueOf(id_orcamento));
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+
+                            String id_client = c.getString(c.getColumnIndex("_id_cliente"));
+                            String id_client_remote = db.SelectClientRemoteIDbyID(id_client);
+
+                            if (id_client_remote != null) {
+                                db.InsertOrcamentoClientRemoteID(id_client_remote, String.valueOf(id_orcamento));
+                                InsertOrcamentoRemote(id_orcamento);
+                            }
+                        }
+                        c.close();
+                    }
+                    db.close();
+                }
+            }.start();
+        } else {
+            if (!IORC) {
+                //Registra o Receiver para Inserir um Orçamento Remotamente
+                context.registerReceiver(ReceiverInsertOrcamento, new IntentFilter("LS_INSERT_ORCAMENTO_TO_DB"));
+
+                //Intent para receber futuramente
+                Intent intent = new Intent("LS_INSERT_ORCAMENTO_TO_DB");
+                //Agenda um Alarme para executar posteriormente
+                AlarmUtil alarm = new AlarmUtil();
+                alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+                IORC = true;
+            }
+        }
+    }
+
+    //Insert Orçamento Remote
+    private void JSONtoDBInsertOrcamentoRemoteID(JSONArray json, String id_orcamento) throws IOException {
+        if (json != null) {
+            try {
+                //Insere Orçamento no Banco de Dados
+                for (int i = 0; i < json.length(); i++) {
+                    JSONObject jsonOrcamento = json.getJSONObject(i);
+                    LedStockDB db = new LedStockDB(context);
+                    db.InsertOrcamentoRemoteID(jsonOrcamento.optString("id_orcamento"), id_orcamento);
+                    db.close();
+                }
+            } catch (JSONException e) {
+                //Log.e(TAG, e.getMessage());
+            }
+        }
+    }
+
+    //Edita um Orçamento no Banco de Dados remoto
+    public void UpdateOrcamentoRemote(final long id_orcamento) {
+        //Se tiver conexão com a internet,edita no DB remoto
+        if (IsConected()) {
+            new Thread() {
+                public void run() {
+
+                    String getmethod1 = "KEY=" + key;
+                    String getmethod2 = "action=EditOrcamento";
+                    String new_url = url_post.replace("{get_method}", getmethod1 + "&" + getmethod2);
+
+                    LedStockDB db = new LedStockDB(context);
+                    Cursor c = db.SelectOrcamentoByID(String.valueOf(id_orcamento));
+
+                    if (c != null) {
+                        if (db.SelectOrcamentoRemoteIDById(String.valueOf(id_orcamento)) != 0) {
+                            Map<String, String> mapParams = new HashMap<String, String>();
+                            Global global = new Global();
+                            mapParams.put("user", global.getUsuario());
+                            mapParams.put("id_orcamento", c.getString(c.getColumnIndex("_id_orcamento_remote")));
+                            mapParams.put("orcamento", c.getString(c.getColumnIndex("orcamento")));
+                            mapParams.put("pcm", c.getString(c.getColumnIndex("pcm")));
+                            mapParams.put("psm", c.getString(c.getColumnIndex("psm")));
+                            mapParams.put("data_pedido", c.getString(c.getColumnIndex("data_pedido")));
+
+                            HttpHelper http = new HttpHelper();
+
+                            try {
+                                http.doPost(new_url, mapParams, "UTF-8");
+                                db.RemoveEditedfromOrcamento(String.valueOf(id_orcamento));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        c.close();
+                    }
+                    db.close();
+                }
+            }.start();
+        } else {
+            if (!EORC) {
+                //Registra o Receiver para Editar um Orçamento Remotamente
+                context.registerReceiver(ReceiverEditOrcamento, new IntentFilter("LS_EDIT_ORCAMENTO_TO_DB"));
+
+                //Intent para receber futuramente
+                Intent intent = new Intent("LS_EDIT_ORCAMENTO_TO_DB");
+                //Agenda um Alarme para executar posteriormente
+                AlarmUtil alarm = new AlarmUtil();
+                alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+                EORC = true;
+            }
+        }
+    }
+
+    //Deleta um Orçamento Remotamente
+    public void DeleteOrcamentoRemote(final String id_orcamento) {
+        //Se tiver conexão com a internet,edita no DB remoto
+        if (IsConected()) {
+            new Thread() {
+                public void run() {
+
+                    String getmethod1 = "KEY=" + key;
+                    String getmethod2 = "action=DeleteOrcamento";
+                    String new_url = url_post.replace("{get_method}", getmethod1 + "&" + getmethod2);
+
+                    LedStockDB db = new LedStockDB(context);
+                    Cursor c = db.SelectOrcamentoByID(id_orcamento);
+
+                    if (c != null) {
+                        if (db.SelectOrcamentoRemoteIDById(id_orcamento) != 0) {
+                            Map<String, String> mapParams = new HashMap<String, String>();
+                            Global global = new Global();
+                            mapParams.put("user", global.getUsuario());
+                            mapParams.put("id_orcamento", c.getString(c.getColumnIndex("_id_orcamento_remote")));
+                            HttpHelper http = new HttpHelper();
+
+                            try {
+                                http.doPost(new_url, mapParams, "UTF-8");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        c.close();
+                    }
+                    db.close();
+                }
+            }.start();
+        } else {
+            if (!DORC) {
+                //Registra o Receiver para Deletar o Orçamento Remotamente
+                context.registerReceiver(ReceiverDeleteOrcamento, new IntentFilter("LS_DELETE_ORCAMENTO_TO_DB"));
+
+                //Intent para receber futuramente
+                Intent intent = new Intent("LS_DELETE_ORCAMENTO_TO_DB");
+                //Agenda um Alarme para executar posteriormente
+                AlarmUtil alarm = new AlarmUtil();
+                alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+                DORC = true;
+            }
+        }
+    }
+
+    //Pega o registro do Orçamento no Banco de Dados Remoto
+    public void GetRegisterOrcamentoRemote(final long id_orcamento_remote, final long id_watch) {
+        //Se tiver conexão com a internet, remove no DB remoto
+        if (IsConected()) {
+            new Thread() {
+                public void run() {
+                    String json = null;
+                    String getmethod1 = "KEY=" + key;
+                    String getmethod2 = "action=GetOrcamentoByID";
+                    String new_url = url_post.replace("{get_method}", getmethod1 + "&" + getmethod2);
+
+                    Map<String, String> mapParams = new HashMap<String, String>();
+                    mapParams.put("id_orcamento", String.valueOf(id_orcamento_remote));
+                    HttpHelper http = new HttpHelper();
+
+                    try {
+                        json = http.doPost(new_url, mapParams, "UTF-8");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    JSONArray jsonArray = new JSONArray();
+                    try {
+                        jsonArray = parserJSON(json);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    if (jsonArray != null) {
+                        //Insere cada Usuário no Banco de Dados
+                        final int numberOfItemsInResp = jsonArray.length();
+                        for (int i = 0; i < numberOfItemsInResp; i++) {
+                            try {
+                                JSONObject jsonEstudo = jsonArray.getJSONObject(i);
+                                String orcamento = jsonEstudo.optString("orcamento");
+                                String id_cliente = jsonEstudo.optString("id_cliente");
+                                String data = jsonEstudo.optString("data");
+                                String data_pedido = jsonEstudo.optString("data_pedido");
+                                String psm = jsonEstudo.optString("psm");
+                                String pcm = jsonEstudo.optString("pcm");
+                                String enable = jsonEstudo.optString("enable");
+
+                                LedStockDB db = new LedStockDB(context);
+                                long id = db.SelectOrcamentoIDByIDRemote(String.valueOf(id_orcamento_remote));
+                                db.Update_Orcamento(String.valueOf(id), orcamento, "0", id_cliente, data, data_pedido, psm, pcm, enable);
+                                db.WatchMarkDone(id_watch);
+                                db.close();
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } finally {
+                                Intent intent = new Intent();
+                                intent.setAction("REFRESH_ORCAMENTOS");
+                                context.sendBroadcast(intent);
+                            }
+                        }
+                    }
+                }
+            }.start();
+        }
+    }
+
+    private void JSONtoDBOrcamento(JSONArray json) throws IOException {
+        if (json != null) {
+            String orcamento;
+            String id_remoto;
+            String enable;
+            String psm;
+            String pcm;
+            String data;
+            String data_pedido;
+            String id_cliente;
+            try {
+                //Insere cada HandsOn no Banco de Dados
+                for (int i = 0; i < json.length(); i++) {
+                    JSONObject jsonEstudo = json.getJSONObject(i);
+                    LedStockDB db = new LedStockDB(context);
+                    orcamento = jsonEstudo.optString("orcamento");
+                    id_remoto = jsonEstudo.optString("id_orcamento");
+                    id_cliente = jsonEstudo.optString("id_cliente");
+                    enable = jsonEstudo.optString("enable");
+                    psm = jsonEstudo.optString("psm");
+                    pcm = jsonEstudo.optString("pcm");
+                    data = jsonEstudo.optString("data");
+                    data_pedido = jsonEstudo.optString("data_pedido");
+                    db.Insert_Orcamento(null, id_cliente, orcamento, id_remoto, data, psm, pcm, data_pedido, enable);
+                    db.close();
+                }
+            } catch (JSONException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+    }
+
+    /***********************************************************************************************
+     * FUNÇÕES REFERENTES AOS ITENS DO OÇAMENTO
+     ***********************************************************************************************/
+
+    //Insere Item do Orçamento no Banco de Dados remoto
+    public void InsertItensOfOrcamentoRemote(final long id_ItemOfOrcamento, final long ID_ORCAMENTO) {
+        //Se tiver conexão com a internet, insere no banco de dados remoto
+        if (IsConected()) {
+            new Thread() {
+                public void run() {
+                    Global global = new Global();
+                    String getmethod1 = "KEY=" + key;
+                    String getmethod2 = "action=InsertItensOfOrcamento";
+                    String getmethod3 = "user=" + global.getUsuario();
+                    String new_url = url_post.replace("{get_method}", getmethod1 + "&" + getmethod2 + "&" + getmethod3);
+                    String json;
+
+                    LedStockDB db = new LedStockDB(context);
+                    Cursor c = db.SelectItemOfOrcamentoByID(String.valueOf(id_ItemOfOrcamento));
+
+                    if (c != null) {
+                        String key_table = c.getString(c.getColumnIndex("key_table"));
+                        String id_orcamento_remoto = c.getString(c.getColumnIndex("_id_orcamento_remote"));
+                        String quant = c.getString(c.getColumnIndex("quantidade"));
+                        String valor = c.getString(c.getColumnIndex("_value"));
+                        String desc = c.getString(c.getColumnIndex("descount"));
+
+                        if (id_orcamento_remoto != null) {
+                            String id_handson_remoto = c.getString(c.getColumnIndex("_id_hands_on_remote"));
+                            String id_led_remoto = c.getString(c.getColumnIndex("_id_led_remote"));
+
+                            if (key_table.equals("1") && (id_led_remoto == null)) {
+                                String id_led = c.getString(c.getColumnIndex("_id_led"));
+                                String _id_remote = String.valueOf(db.SelectLedRemoteIDById(id_led));
+                                if (!_id_remote.equals("0")) {
+                                    db.InsertLEDRemoteInItensOfOrcamento(_id_remote, String.valueOf(id_ItemOfOrcamento));
+                                    InsertItensOfOrcamentoRemote(id_ItemOfOrcamento, ID_ORCAMENTO);
+                                }
+                            } else if (key_table.equals("2") && (id_handson_remoto == null)) {
+                                String id_handson = c.getString(c.getColumnIndex("_id_hands_on"));
+                                String _id_remote = String.valueOf(db.SelectHandsOnRemoteIDById(id_handson));
+                                if (!_id_remote.equals("0")) {
+                                    db.InsertHandsOnRemoteInItensOfOrcamento(_id_remote, String.valueOf(id_ItemOfOrcamento));
+                                    InsertItensOfOrcamentoRemote(id_ItemOfOrcamento, ID_ORCAMENTO);
+                                }
+                            } else {
+                                if ((id_handson_remoto != null) || (id_led_remoto != null)|| (key_table.equals("3"))) {
+                                    if (db.SelectItensOfOrcamentoRemoteIDById(String.valueOf(id_ItemOfOrcamento)) == 0) {
+                                        Map<String, String> mapParams = new HashMap<String, String>();
+                                        mapParams.put("id_orcamento", id_orcamento_remoto);
+                                        mapParams.put("key_table", key_table);
+                                        mapParams.put("id_handson", id_handson_remoto);
+                                        mapParams.put("id_led", id_led_remoto);
+                                        mapParams.put("quantidade", quant);
+                                        mapParams.put("valor", valor);
+                                        mapParams.put("desconto", desc);
+                                        HttpHelper http = new HttpHelper();
+
+                                        try {
+                                            json = http.doPost(new_url, mapParams, "UTF-8");
+                                            if (!json.equals("")) {
+                                                try {
+                                                    JSONtoDBInsertItensOfOrcamentoRemoteID(parserJSON(json), String.valueOf(id_ItemOfOrcamento));
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else {
+                            String id_orcamento = c.getString(c.getColumnIndex("_id_orcamento"));
+                            if (id_orcamento != null) {
+                                String id_orcamento_remote = String.valueOf(db.SelectOrcamentoRemoteIDById(id_orcamento));
+                                if (!id_orcamento_remote.equals("0")) {
+                                    db.InsertOrcamentoRemoteInItensOfOrcamento(id_orcamento_remote, String.valueOf(id_ItemOfOrcamento));
+                                    InsertItensOfOrcamentoRemote(id_ItemOfOrcamento, ID_ORCAMENTO);
+                                }
+                            } else {
+                                String RemoteID = String.valueOf(db.SelectOrcamentoRemoteIDById(String.valueOf(ID_ORCAMENTO)));
+                                if (!RemoteID.equals("0")) {
+                                    db.InsertOrcamentoRemoteInItensOfOrcamento(RemoteID, String.valueOf(id_ItemOfOrcamento));
+                                    InsertItensOfOrcamentoRemote(id_ItemOfOrcamento, ID_ORCAMENTO);
+                                }
+                            }
+                        }
+                        c.close();
+                    }
+                    db.close();
+                }
+            }.start();
+        } else {
+            if (!IIOFORC) {
+                //Registra o Receiver para Inserir um Item do Orçamento Remotamente
+                context.registerReceiver(ReceiverInsertItensOfOrcamento, new IntentFilter("LS_INSERT_ITENS_OF_ORCAMENTO_TO_DB"));
+
+                //Intent para receber futuramente
+                Intent intent = new Intent("LS_INSERT_ITENS_OF_ORCAMENTO_TO_DB");
+                //Agenda um Alarme para executar posteriormente
+                AlarmUtil alarm = new AlarmUtil();
+                alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+                IIOFORC = true;
+            }
+        }
+    }
+
+    private void JSONtoDBInsertItensOfOrcamentoRemoteID(JSONArray json, String id_ItemOfOrcamento) throws IOException {
+        if (json != null) {
+            try {
+                //Insere cada Item do Orçamento no Banco de Dados
+                for (int i = 0; i < json.length(); i++) {
+                    JSONObject jsonItemOfOrcamento = json.getJSONObject(i);
+                    LedStockDB db = new LedStockDB(context);
+                    db.InsertItemOfOrcamentoRemoteID(jsonItemOfOrcamento.optString("id_itens"), id_ItemOfOrcamento);
+                    db.close();
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        }
+    }
+
+    private void JSONtoDBItensOfOrcamento(JSONArray json) throws IOException {
+        if (json != null) {
+            String id_remoto;
+            String id_orcamento;
+            String key_table;
+            String id_handson;
+            String id_led;
+            String quantidade;
+            String vl;
+            String valor;
+            String desconto;
+            String enable;
+            String dsc;
+
+            try {
+                //Insere cada HandsOn no Banco de Dados
+                for (int i = 0; i < json.length(); i++) {
+                    JSONObject jsonItensOfOrcamento = json.getJSONObject(i);
+                    LedStockDB db = new LedStockDB(context);
+                    id_remoto = jsonItensOfOrcamento.optString("id_itens");
+                    id_orcamento = jsonItensOfOrcamento.optString("id_orcamento");
+                    key_table = jsonItensOfOrcamento.optString("key_table");
+                    id_handson = jsonItensOfOrcamento.optString("id_handson");
+                    id_led = jsonItensOfOrcamento.optString("id_led");
+                    quantidade = jsonItensOfOrcamento.optString("quantidade");
+                    valor = jsonItensOfOrcamento.optString("valor");
+                    desconto = jsonItensOfOrcamento.optString("desconto");
+                    enable = jsonItensOfOrcamento.optString("enable");
+                    String quant;
+
+                    if ((quantidade == null) || (quantidade.equals(""))) {
+                        quant = "";
+                    } else {
+                        quant = quantidade;
+                    }
+                    if ((valor == null) || (valor.equals(""))) {
+                        vl = "";
+                    } else {
+                        vl = valor;
+                    }
+                    if ((desconto == null) || (desconto.equals(""))) {
+                        dsc = "";
+                    } else {
+                        dsc = desconto;
+                    }
+
+                    db.Insert_Itens_Of_Orcamento(id_remoto, null,  id_orcamento, null, id_led, Integer.parseInt(key_table),
+                            null, id_handson, quant, vl, dsc, enable);
+                    db.close();
+                }
+            } catch (JSONException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+    }
+
+    public void DeleteItensOfOrcamentoRemote(final String id_itens) {
+        //Se tiver conexão com a internet,edita no DB remoto
+        if (IsConected()) {
+            new Thread() {
+                public void run() {
+                    String getmethod1 = "KEY=" + key;
+                    String getmethod2 = "action=DeleteItensOfOrcamento";
+                    String new_url = url_post.replace("{get_method}", getmethod1 + "&" + getmethod2);
+
+                    LedStockDB db = new LedStockDB(context);
+                    Cursor c = db.SelectItemOfOrcamentoByID(id_itens);
+
+                    if (c != null) {
+                        if (db.SelectItensOfOrcamentoRemoteIDById(id_itens) != 0) {
+                            Map<String, String> mapParams = new HashMap<String, String>();
+                            Global global = new Global();
+                            mapParams.put("user", global.getUsuario());
+                            mapParams.put("id_itens", c.getString(c.getColumnIndex("_id_list_of_orcamento_remote")));
+                            HttpHelper http = new HttpHelper();
+
+                            try {
+                                http.doPost(new_url, mapParams, "UTF-8");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        c.close();
+                    }
+                    db.close();
+                }
+            }.start();
+        } else {
+            if (!DIOFORC) {
+                //Registra o Receiver para Deletar o Item do Orçamento Remotamente
+                context.registerReceiver(ReceiverDeleteItensOfOrcamento, new IntentFilter("LS_DELETE_ITENS_OF_ORCAMENTO_TO_DB"));
+
+                //Intent para receber futuramente
+                Intent intent = new Intent("LS_DELETE_ITENS_OF_ORCAMENTO_TO_DB");
+                //Agenda um Alarme para executar posteriormente
+                AlarmUtil alarm = new AlarmUtil();
+                alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+                DIOFORC = true;
+            }
+        }
+    }
+
+    /***********************************************************************************************
      * FUNÇÕES REFERENTES A CONEXÃO COM A INTERNET E CAPTURAR A HORA
      ***********************************************************************************************/
     private boolean IsConected() {
@@ -3693,6 +4289,143 @@ public class LedService extends Service {
         }
     };
 
+    //BroadCast Receiver para Inserir os Orçamentos Remotamente
+    private BroadcastReceiver ReceiverInsertOrcamento = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context_receiver, Intent intent) {
+            //Log.d(TAG, "onReceive Acionado !");
+            if (IsConected()) {
+                LedStockDB db = new LedStockDB(context);
+                Cursor c = db.SelectOrcamentoInsertPending();
+
+                if (c != null) {
+                    do {
+                        InsertOrcamentoRemote(Integer.parseInt(c.getString(c.getColumnIndex("_id_orcamento"))));
+
+                    } while (c.moveToNext());
+                    c.close();
+                } else {
+                    AlarmUtil alarm = new AlarmUtil();
+                    alarm.cancel(context_receiver, intent);
+                    IORC = false;
+
+                    //Cancela o Registro de Inserir uma Lamp
+                    context.unregisterReceiver(ReceiverInsertOrcamento);
+                }
+                db.close();
+            }
+        }
+    };
+
+    //BroadCast Receiver para Editar o Orçamento
+    private BroadcastReceiver ReceiverEditOrcamento = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context_receiver, Intent intent) {
+            //Log.d(TAG, "onReceive Acionado !");
+            if (IsConected()) {
+                LedStockDB db = new LedStockDB(context);
+                Cursor c = db.SelectOrcamentoEditPending();
+
+                if (c != null) {
+                    do {
+                        UpdateOrcamentoRemote(Integer.parseInt(c.getString(c.getColumnIndex("_id_orcamento"))));
+                    } while (c.moveToNext());
+                    c.close();
+                } else {
+                    //Caso consiga efetuar a inserção remota, cancela o Alarme
+                    AlarmUtil alarm = new AlarmUtil();
+                    alarm.cancel(context_receiver, intent);
+                    EORC = false;
+
+                    //Cancela o Registro de Editar Orçamento
+                    context.unregisterReceiver(ReceiverEditOrcamento);
+                }
+                db.close();
+            }
+        }
+    };
+
+    //BroadCast Receiver para Deletar um Orçamento Remotamente
+    private BroadcastReceiver ReceiverDeleteOrcamento = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context_receiver, Intent intent) {
+            //Log.d(TAG, "onReceive Acionado !");
+            if (IsConected()) {
+                LedStockDB db = new LedStockDB(context);
+                Cursor c = db.SelectOrcamentoDeletePending();
+
+                if (c != null) {
+                    do {
+                        DeleteOrcamentoRemote(c.getString(c.getColumnIndex("_id_orcamento")));
+                    } while (c.moveToNext());
+                    c.close();
+                } else {
+                    //Caso consiga efetuar a inserção remota, cancela o Alarme
+                    AlarmUtil alarm = new AlarmUtil();
+                    alarm.cancel(context_receiver, intent);
+                    DORC = false;
+
+                    //Cancela o Registro de Deletar o Orçamento
+                    context.unregisterReceiver(ReceiverDeleteOrcamento);
+                }
+                db.close();
+            }
+        }
+    };
+
+    private BroadcastReceiver ReceiverInsertItensOfOrcamento = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context_receiver, Intent intent) {
+            Log.d(TAG, "onReceive Acionado !");
+            if (IsConected()) {
+                LedStockDB db = new LedStockDB(context);
+                Cursor c = db.SelectItensOfOrcamentoInsertPending();
+
+                if (c != null) {
+                    do {
+                        InsertItensOfOrcamentoRemote(Integer.parseInt(c.getString(c.getColumnIndex("_id_list_of_orcamento"))), 0);
+                    } while (c.moveToNext());
+                    c.close();
+                } else {
+                    //Caso consiga efetuar a inserção remota, cancela o Alarme
+                    AlarmUtil alarm = new AlarmUtil();
+                    alarm.cancel(context_receiver, intent);
+                    IIOFORC = false;
+
+                    //Cancela o Registro de Inserir uma Lamp
+                    context.unregisterReceiver(ReceiverInsertItensOfOrcamento);
+                }
+                db.close();
+            }
+        }
+    };
+
+    private BroadcastReceiver ReceiverDeleteItensOfOrcamento = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context_receiver, Intent intent) {
+            //Log.d(TAG, "onReceive Acionado !");
+            if (IsConected()) {
+                LedStockDB db = new LedStockDB(context);
+                Cursor c = db.SelectItensOfOrcamentoDeletePending();
+                if (c != null) {
+                    do {
+                        DeleteItensOfOrcamentoRemote(c.getString(c.getColumnIndex("_id_list_of_orcamento")));
+                    } while (c.moveToNext());
+                    c.close();
+                } else {
+                    //Caso consiga efetuar a inserção remota, cancela o Alarme
+                    AlarmUtil alarm = new AlarmUtil();
+                    alarm.cancel(context_receiver, intent);
+                    DIOFORC = false;
+
+                    //Cancela o Registro de Deletar o Ambiente
+                    context.unregisterReceiver(ReceiverDeleteItensOfOrcamento);
+                }
+                db.close();
+            }
+        }
+    };
+
 
     /***********************************************************************************************
      * FUNÇÃO PARA EDITAR OS REGISTROS PENDENTES E ADICIONAR OS NOVOS NO BANCO DE DADOS
@@ -3716,6 +4449,8 @@ public class LedService extends Service {
         boolean GET_ESTUDO = false;
         boolean GET_AMBIENTE_ESTUDO = false;
         boolean GET_ITENS_ESTUDO = false;
+        boolean GET_ORCAMENTO = false;
+        boolean GET_ITENS_ORCAMENTO = false;
 
         LedStockDB db = new LedStockDB(context);
         Cursor c = db.SelectWatchPending();
@@ -3880,6 +4615,34 @@ public class LedService extends Service {
                             DONE = 1;
                         }
                         break;
+                    case "orcamento":
+                        if (ACTION_ADD == action) {
+                            GET_ORCAMENTO = true;
+                            DONE = 1;
+                        } else if (ACTION_EDIT == action) {
+                            GetRegisterOrcamentoRemote(Long.parseLong(id_table), id_watch);
+                        } else if (ACTION_DELETE == action) {
+                            id = db.SelectOrcamentoIDByIDRemote(id_table);
+                            db.DeleteOrcamento(String.valueOf(id));
+                            Intent intent = new Intent();
+                            intent.setAction("REFRESH_ORCAMENTOS");
+                            context.sendBroadcast(intent);
+                            DONE = 1;
+                        }
+                        break;
+                    case "itens_orcamento":
+                        if (ACTION_ADD == action) {
+                            GET_ITENS_ORCAMENTO = true;
+                            DONE = 1;
+                        } else if (ACTION_DELETE == action) {
+                            id = db.SelectItensOfOrcamentoIDByIDRemote(id_table);
+                            db.DeleteItensOfOrcamento(String.valueOf(id));
+                            Intent intent = new Intent();
+                            intent.setAction("REFRESH_ITENS_ORCAMENTO");
+                            context.sendBroadcast(intent);
+                            DONE = 1;
+                        }
+                        break;
                 }
                 if (DONE == 1) {
                     db.WatchMarkDone(id_watch);
@@ -3916,6 +4679,12 @@ public class LedService extends Service {
             if (GET_ITENS_ESTUDO) {
                 GetItensOfEstudo();
             }
+            if (GET_ORCAMENTO) {
+                GetOrcamento();
+            }
+            if (GET_ITENS_ORCAMENTO) {
+                GetItensOfOrcamento();
+            }
             c.close();
             db.close();
         }
@@ -3933,6 +4702,11 @@ public class LedService extends Service {
         if (pendingInsertClient != null) {
             ICLI = true;
             context.registerReceiver(ReceiverInsertClient, new IntentFilter("LS_INSERT_CLIENT_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_CLIENT_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertClient.close();
         }
         //Verifica se Existe algum cliente pendente de edição
@@ -3940,6 +4714,11 @@ public class LedService extends Service {
         if (pendingEditClient != null) {
             ECLI = true;
             context.registerReceiver(ReceiverEditClient, new IntentFilter("LS_EDIT_CLIENT_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_CLIENT_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditClient.close();
         }
         //Verifica se Existe alguma lampada pendente de inserção
@@ -3947,6 +4726,11 @@ public class LedService extends Service {
         if (pendingInsertLamp != null) {
             ILAMP = true;
             context.registerReceiver(ReceiverInsertLamp, new IntentFilter("LS_INSERT_LAMP_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_LAMP_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertLamp.close();
         }
         //Verifica se Existe alguma lampada pendente de edição
@@ -3954,6 +4738,11 @@ public class LedService extends Service {
         if (pendingEditLamp != null) {
             ELAMP = true;
             context.registerReceiver(ReceiverEditLamp, new IntentFilter("LS_EDIT_LAMP_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_LAMP_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditLamp.close();
         }
         //Verifica se Existe alguma lampada pendente de exclusão
@@ -3961,6 +4750,11 @@ public class LedService extends Service {
         if (pendingDeleteLamp != null) {
             DLAMP = true;
             context.registerReceiver(ReceiverDeleteLamp, new IntentFilter("LS_DELETE_LAMP_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_LAMP_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteLamp.close();
         }
         //Verifica se Existe algum LED pendente de inserção
@@ -3968,6 +4762,11 @@ public class LedService extends Service {
         if (pendingInsertLed != null) {
             ILED = true;
             context.registerReceiver(ReceiverInsertLED, new IntentFilter("LS_INSERT_LED_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_LED_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertLed.close();
         }
         //Verifica se Existe algum LED pendente de edição
@@ -3975,6 +4774,11 @@ public class LedService extends Service {
         if (pendingEditLed != null) {
             ELED = true;
             context.registerReceiver(ReceiverEditLed, new IntentFilter("LS_EDIT_LED_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_LED_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditLed.close();
         }
         //Verifica se Existe algum LED pendente de exclusão
@@ -3982,6 +4786,11 @@ public class LedService extends Service {
         if (pendingDeleteLed != null) {
             DLED = true;
             context.registerReceiver(ReceiverDeleteLed, new IntentFilter("LS_DELETE_LED_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_LED_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteLed.close();
         }
         //Verifica se Existe alguma Mão de Obra pendente de inserção
@@ -3989,6 +4798,11 @@ public class LedService extends Service {
         if (pendingInsertHandsOn != null) {
             IHAND = true;
             context.registerReceiver(ReceiverInsertHandsOn, new IntentFilter("LS_INSERT_HANDSON_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_HANDSON_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertHandsOn.close();
         }
         //Verifica se Existe alguma Mão de Obra pendente de Edição
@@ -3996,6 +4810,11 @@ public class LedService extends Service {
         if (pendingEditHandsOn != null) {
             EHAND = true;
             context.registerReceiver(ReceiverEditHandsOn, new IntentFilter("LS_EDIT_HANDSON_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_HANDSON_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditHandsOn.close();
         }
         //Verifica se Existe alguma Mão de Obra pendente de Exclusão
@@ -4003,6 +4822,11 @@ public class LedService extends Service {
         if (pendingDeleteHandsOn != null) {
             DHAND = true;
             context.registerReceiver(ReceiverDeleteHandsOn, new IntentFilter("LS_DELETE_HANDSON_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_HANDSON_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteHandsOn.close();
         }
         //Verifica se Existe algum Ambiente pendente de inserção
@@ -4010,6 +4834,11 @@ public class LedService extends Service {
         if (pendingInsertAmbiente != null) {
             IAMBI = true;
             context.registerReceiver(ReceiverInsertAmbiente, new IntentFilter("LS_INSERT_AMBIENTE_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_AMBIENTE_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertAmbiente.close();
         }
         //Verifica se Existe algum Ambiente pendente de Edição
@@ -4017,6 +4846,11 @@ public class LedService extends Service {
         if (pendingEditHAmbiente != null) {
             EAMBI = true;
             context.registerReceiver(ReceiverEditAmbiente, new IntentFilter("LS_EDIT_AMBIENTE_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_AMBIENTE_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditHAmbiente.close();
         }
         //Verifica se Existe algum Ambiente pendente de Edição
@@ -4024,6 +4858,11 @@ public class LedService extends Service {
         if (pendingDeleteAmbiente != null) {
             DAMBI = true;
             context.registerReceiver(ReceiverDeleteAmbiente, new IntentFilter("LS_DELETE_AMBIENTE_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_AMBIENTE_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteAmbiente.close();
         }
         //Verifica se Existe algum Usuário pendente de inserção
@@ -4031,6 +4870,11 @@ public class LedService extends Service {
         if (pendingInsertUsuario != null) {
             IUSER = true;
             context.registerReceiver(ReceiverInsertUsers, new IntentFilter("LS_INSERT_USER_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_USER_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertUsuario.close();
         }
         //Verifica se Existe algum Usuário pendente de edição
@@ -4038,6 +4882,11 @@ public class LedService extends Service {
         if (pendingEditUsuario != null) {
             EUSER = true;
             context.registerReceiver(ReceiverEditUsers, new IntentFilter("LS_EDIT_USER_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_USER_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditUsuario.close();
         }
         //Verifica se Existe algum Usuário pendente de exclusão
@@ -4045,6 +4894,11 @@ public class LedService extends Service {
         if (pendingDeleteUsuario != null) {
             DUSER = true;
             context.registerReceiver(ReceiverDeleteUsers, new IntentFilter("LS_DELETE_USER_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_USER_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteUsuario.close();
         }
         //Verifica se Existe algum Estudo pendente de inserção
@@ -4052,6 +4906,11 @@ public class LedService extends Service {
         if (pendingInsertEstudo != null) {
             IEST = true;
             context.registerReceiver(ReceiverInsertEstudo, new IntentFilter("LS_INSERT_ESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_ESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertEstudo.close();
         }
         //Verifica se Existe algum Estudo pendente de edição
@@ -4059,6 +4918,11 @@ public class LedService extends Service {
         if (pendingEditEstudo != null) {
             EEST = true;
             context.registerReceiver(ReceiverEditEstudo, new IntentFilter("LS_EDIT_ESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_ESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingEditEstudo.close();
         }
         //Verifica se Existe algum Estudo pendente de exclusão
@@ -4066,6 +4930,11 @@ public class LedService extends Service {
         if (pendingDeleteEstudo != null) {
             DEST = true;
             context.registerReceiver(ReceiverDeleteEstudo, new IntentFilter("LS_DELETE_ESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_ESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteEstudo.close();
         }
         //Verifica se Existe algum Ambiente do Estudo pendente de inserção
@@ -4073,6 +4942,11 @@ public class LedService extends Service {
         if (pendingInsertIOA != null) {
             IAMBOEST = true;
             context.registerReceiver(ReceiverInsertAmbienteOfEstudo, new IntentFilter("LS_INSERT_AMBIENTETOESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_AMBIENTETOESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertIOA.close();
         }
         //Verifica se Existe algum Ambiente do Estudo pendente de edição
@@ -4080,6 +4954,11 @@ public class LedService extends Service {
         if (pendingDeleteIOA != null) {
             DAMBOEST = true;
             context.registerReceiver(ReceiverDeleteAmbienteOfEstudo, new IntentFilter("LS_DELETE_AMBIENTEOFESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_AMBIENTEOFESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteIOA.close();
         }
         //Verifica se Existe algum Item do Estudo pendente de inserção
@@ -4087,6 +4966,11 @@ public class LedService extends Service {
         if (pendingInsertIOE != null) {
             IIOFEST = true;
             context.registerReceiver(ReceiverInsertItensOfEstudo, new IntentFilter("LS_INSERT_ITENS_OF_ESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_ITENS_OF_ESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingInsertIOE.close();
         }
         //Verifica se Existe algum Ambiente do Estudo pendente de edição
@@ -4094,7 +4978,75 @@ public class LedService extends Service {
         if (pendingDeleteIOE != null) {
             DIOFEST = true;
             context.registerReceiver(ReceiverDeleteItensOfEstudo, new IntentFilter("LS_DELETE_ITENSOFESTUDO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_ITENSOFESTUDO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
             pendingDeleteIOE.close();
+        }
+        //Verifica se Existe algum Orçamento pendente de inserção
+        Cursor pendingInsertOrcamento = db.SelectOrcamentoInsertPending();
+        if (pendingInsertOrcamento != null) {
+            IORC = true;
+            context.registerReceiver(ReceiverInsertOrcamento, new IntentFilter("LS_INSERT_ORCAMENTO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_ORCAMENTO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+            pendingInsertOrcamento.close();
+        }
+
+        //Verifica se Existe algum Orçamento pendente de edição
+        Cursor pendingEditOrcamento = db.SelectOrcamentoEditPending();
+        if (pendingEditOrcamento != null) {
+            EORC = true;
+            context.registerReceiver(ReceiverEditOrcamento, new IntentFilter("LS_EDIT_ORCAMENTO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_EDIT_ORCAMENTO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+            pendingEditOrcamento.close();
+        }
+        //Verifica se Existe algum Orçamento pendente de exclusão
+        Cursor pendingDeleteOrcamento = db.SelectOrcamentoDeletePending();
+        if (pendingDeleteOrcamento != null) {
+            DORC = true;
+            context.registerReceiver(ReceiverDeleteOrcamento, new IntentFilter("LS_DELETE_ORCAMENTO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_ORCAMENTO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+            pendingDeleteOrcamento.close();
+        }
+        //Verifica se Existe algum Item do Orçamento pendente de inserção
+        Cursor pendingInsertIOO = db.SelectItensOfOrcamentoInsertPending();
+
+        if (pendingInsertIOO != null) {
+            IIOFORC = true;
+            context.registerReceiver(ReceiverInsertItensOfOrcamento, new IntentFilter("LS_INSERT_ITENS_OF_ORCAMENTO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_INSERT_ITENS_OF_ORCAMENTO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+            pendingInsertIOO.close();
+        }
+
+        //Verifica se Existe algum Item do Orçamento pendente de edição
+        Cursor pendingDeleteIOO = db.SelectItensOfOrcamentoDeletePending();
+        if (pendingDeleteIOO != null) {
+            DIOFORC = true;
+            context.registerReceiver(ReceiverDeleteItensOfOrcamento, new IntentFilter("LS_DELETE_ITENS_OF_ORCAMENTO_TO_DB"));
+            //Intent para receber futuramente
+            Intent intent = new Intent("LS_DELETE_ITENS_OF_ORCAMENTO_TO_DB");
+            //Agenda um Alarme para executar posteriormente
+            AlarmUtil alarm = new AlarmUtil();
+            alarm.scheduleRepeat(context, intent, getTime(), INTERVAL_TEN_SECONDS);
+            pendingDeleteIOO.close();
         }
         db.close();
     }

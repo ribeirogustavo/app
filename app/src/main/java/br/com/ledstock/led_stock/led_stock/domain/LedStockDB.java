@@ -60,6 +60,8 @@ public class LedStockDB extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("create table if not exists itens_of_estudo (_id_itens integer primary key autoincrement, _id_itens_remote integer default null, _id_estudo integer default null, _id_estudo_remote integer default null, _id_ambiente_estudo integer default null, _id_ambiente_estudo_remote integer default null,key_table integer default null, _id_table integer default null, _id_table_remote integer default null,_id_lamp integer default null, _id_lamp_remote integer default null, _id_led integer default null, _id_led_remote integer default null, quantidade integer default 0, horas integer, enable integer default 1);");
         //Cria a tabela Orçamentos
         sqLiteDatabase.execSQL("create table if not exists orcamento (_id_orcamento integer primary key autoincrement, _id_orcamento_remote integer default null, _id_cliente integer default null, _id_client_remote integer default null, orcamento text, data text, psm integer default 0, pcm integer default 0, edited text, data_pedido text default null, enable text default 1);");
+        //Cria a tabela list of Orcamento
+        sqLiteDatabase.execSQL("create table if not exists list_of_orcamento (_id_list_of_orcamento integer primary key autoincrement, _id_list_of_orcamento_remote integer default null, _id_orcamento integer default null, _id_orcamento_remote integer default null, _id_led integer default null, _id_led_remote integer default null, key_table text , _id_hands_on integer default null, _id_hands_on_remote integer default null, quantidade integer, _value double default null, descount double default null, enable text default 1);");
 
     }
 
@@ -2886,4 +2888,601 @@ public class LedStockDB extends SQLiteOpenHelper {
             db.close();
         }
     }
+
+    /***********************************************************************************************
+     * FUNÇÕES RELACIONADAS AO ORÇAMENTO
+     ***********************************************************************************************/
+
+    // Insere Orçamento
+    public long Insert_Orcamento(String id_cliente, String id_client_remote, String orcamento, String id_remoto, String data, String psm, String pcm, String data_pedido, String enable) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        if ((id_remoto != null) && (!id_remoto.equals(""))) {
+            values.put("_id_orcamento_remote", id_remoto);
+        } else {
+            values.put("_id_orcamento_remote", (byte[]) null);
+        }
+
+        values.put("_id_cliente", id_cliente);
+        values.put("_id_client_remote", id_client_remote);
+        if ((orcamento != null) && (!orcamento.equals(""))) {
+            values.put("orcamento", orcamento);
+        }
+        values.put("psm", psm);
+        values.put("pcm", pcm);
+        values.put("data", data);
+        values.put("data_pedido", data_pedido);
+
+        if (enable == null) {
+            values.put("enable", "1");
+        } else {
+            values.put("enable", enable);
+        }
+        return db.insert("orcamento", "", values);
+    }
+
+    //Seleciona um Orçamento pelo ID
+    public Cursor SelectOrcamentoByID(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", null, "_id_orcamento=?", new String[]{id}, null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Insert Remote ID from Orçamento
+    public int InsertOrcamentoRemoteID(String RemoteID, String id_orcamento) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("_id_orcamento_remote", RemoteID);
+
+            // insert into Clientes values (...)
+            //Log.d(TAG, "ID Remoto inserido com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("orcamento", values, "_id_orcamento=?", new String[]{id_orcamento});
+        } finally {
+            db.close();
+        }
+    }
+
+    //Insert Remote ID from Orçamento
+    public int InsertOrcamentoClientRemoteID(String RemoteID, String id_orcamento) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("_id_client_remote", RemoteID);
+
+            // insert into Clientes values (...)
+            //Log.d(TAG, "ID Remoto inserido com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("orcamento", values, "_id_orcamento=?", new String[]{id_orcamento});
+        } finally {
+            db.close();
+        }
+    }
+
+    //Select Orçmentos pendentes a inserção
+    public Cursor SelectOrcamentoInsertPending() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", null, "_id_orcamento_remote is null", null, null, null, "_id_orcamento", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Seleciona os Orçamentos pendentes para inserir no DB remoto
+    public Cursor SelectOrcamentoEditPending() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", null, "edited=?", new String[]{"1"}, null, null, "_id_orcamento", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Seleciona o Id remoto da tabela Orçamento
+    public long SelectOrcamentoRemoteIDById(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", new String[]{"_id_orcamento_remote"}, "_id_orcamento=?", new String[]{id}, null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                if (c.getString(c.getColumnIndex("_id_orcamento_remote")) != null) {
+                    return Integer.parseInt(c.getString(c.getColumnIndex("_id_orcamento_remote")));
+                } else {
+                    return 0;
+                }
+            } else {
+                return 0;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Remove o editado da tabela Orçamento
+    public int RemoveEditedfromOrcamento(String id) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("edited", "");
+
+            return db.update("orcamento", values, "_id_orcamento=?", new String[]{id});
+        } finally {
+            db.close();
+        }
+    }
+
+    //Seleciona orçamentos pendentes para Deletar no DB remoto
+    public Cursor SelectOrcamentoDeletePending() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", null, "enable=?", new String[]{"0"}, null, null, "_id_orcamento", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Seleciona o Id remoto da tabela Orçamento
+    public long SelectOrcamentoIDByIDRemote(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", new String[]{"_id_orcamento"}, "_id_orcamento_remote=?", new String[]{id}, null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                if (c.getString(c.getColumnIndex("_id_orcamento")) != null) {
+                    return Integer.parseInt(c.getString(c.getColumnIndex("_id_orcamento")));
+                } else {
+                    return 0;
+                }
+            } else {
+                return 0;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Deleta Orçamento do DB
+    public int DeleteOrcamento(String id) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("enable", "0");
+
+            return db.update("orcamento", values, "_id_orcamento=?", new String[]{id});
+        } finally {
+            db.close();
+        }
+    }
+
+    // Update Orçamento DB
+    public long Update_Orcamento(String id, String orcamento, String edited, String id_client_remote, String data, String data_pedido, String psm, String pcm, String enable) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            if (orcamento != null) {
+                values.put("orcamento", orcamento);
+            }
+            if (edited != null) {
+                values.put("edited", edited);
+            }
+            if (id_client_remote != null) {
+                values.put("_id_client_remote", id_client_remote);
+            }
+            if (data != null) {
+                values.put("data", data);
+            }
+            if (psm != null) {
+                values.put("psm", psm);
+            }
+            if (pcm != null) {
+                values.put("pcm", pcm);
+            }
+            if (data_pedido != null) {
+                values.put("data_pedido", data_pedido);
+            }
+            if (enable != null) {
+                values.put("enable", enable);
+            }
+            // insert into Clientes values (...)
+            // Log.d(TAG, "Cadastro Atualizados com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("orcamento", values, "_id_orcamento=?", new String[]{id});
+        } finally {
+            db.close();
+        }
+    }
+
+    //Seleciona o ultimo ID Remoto Inserido
+    public String SelectLastRemoteIDofOrcamento() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento", new String[]{"max(_id_orcamento_remote) as _id_orcamento_remote"}, null, null, null, null, null, null);
+            c.moveToFirst();
+            return c.getString(c.getColumnIndex("_id_orcamento_remote"));
+        } finally {
+            db.close();
+        }
+    }
+
+    //Select List of Orçamentos
+    public Cursor Select_ListOrcamentos() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento, clientes", new String[]{"orcamento.*,clientes.nome as cliente, clientes._id_client_remote as id_remote"}, "enable=? AND CASE WHEN orcamento._id_client_remote is null THEN orcamento._id_cliente = clientes._id_cliente ELSE orcamento._id_client_remote = clientes._id_client_remote END", new String[]{"1"}, null, null, "orcamento", null);
+            c.moveToFirst();
+            return c;
+        } finally {
+            db.close();
+        }
+    }
+
+    public Cursor getPesquisarClienteActivityOrcamentos(String s) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento " +
+                            "INNER JOIN clientes ON " +
+                            "CASE WHEN (orcamento._id_client_remote is null OR clientes._id_client_remote is null) THEN " +
+                            "orcamento._id_cliente = clientes._id_cliente ELSE " +
+                            "orcamento._id_client_remote = clientes._id_client_remote END ",
+                    new String[]{"orcamento.*,  clientes.nome as cliente"}, "nome like ? AND orcamento.enable = ?", new String[]{"%" + s + "%", "1"}, null, null, "nome", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Select Nome do Estudo
+    public String Select_NameofOrcamento(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento, clientes", new String[]{"orcamento.*,clientes.nome as cliente"}, "enable=? AND CASE WHEN orcamento._id_client_remote is null THEN orcamento._id_cliente = clientes._id_cliente ELSE orcamento._id_client_remote = clientes._id_client_remote END AND _id_orcamento = ?", new String[]{"1", id}, null, null, "orcamento", null);
+            c.moveToFirst();
+            return c.getString(c.getColumnIndex("cliente"));
+        } finally {
+            db.close();
+        }
+    }
+
+    /***********************************************************************************************
+     * FUNÇÕES RELACIONADAS A LISTA DE ORÇAMENTO
+     ***********************************************************************************************/
+
+    //Select List of items in Orçamento
+    public Cursor Select_ListOfOrcamento(String id_orcamento, String id_orcamento_remote) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c;
+        try {
+
+            c = db.query("list_of_orcamento " +
+                            "LEFT JOIN led_solution ON CASE WHEN list_of_orcamento._id_led_remote is null  THEN list_of_orcamento._id_led = led_solution._id_led ELSE list_of_orcamento._id_led_remote = led_solution._id_led_remote END " +
+                            "LEFT JOIN handson ON CASE WHEN list_of_orcamento._id_hands_on_remote is null  THEN list_of_orcamento._id_hands_on = handson._id_handson ELSE list_of_orcamento._id_hands_on_remote = handson._id_handson_remote END "+
+                            "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                    new String[]{"list_of_orcamento._id_list_of_orcamento as _id, list_of_orcamento.quantidade as quantidade, list_of_orcamento._value as value, list_of_orcamento.descount as descount,led_solution.descricao as descricao, handson.descricao as descricao_mao"},
+                    //"WHERE" +
+                    "list_of_orcamento.enable = ? AND " +
+                            "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                            "key_table != ? "
+                    , new String[]{"1", id_orcamento, id_orcamento_remote, "3"}, null, null, "descricao_mao", null);
+            c.moveToFirst();
+
+            return c;
+        } finally {
+            db.close();
+        }
+    }
+
+    //Select List of items in Orçamento
+    public Cursor Select_InfoOfClientinOrcamento(String id_orcamento, String id_orcamento_remote) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c;
+        try {
+            c = db.query("clientes, orcamento", new String[]{"clientes.nome as cliente, clientes.cnpj_cpf, clientes.tel, clientes.contato, clientes.email"},
+                    "orcamento.enable = ? AND " +
+                            "CASE  WHEN orcamento._id_client_remote is null  THEN orcamento._id_cliente = clientes._id_cliente  ELSE orcamento._id_client_remote = clientes._id_client_remote  END AND " +
+                            "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END"
+                    , new String[]{"1", id_orcamento, id_orcamento_remote}, null, null, null, null);
+            c.moveToFirst();
+            return c;
+        } finally {
+            db.close();
+        }
+    }
+
+    /***********************************************************************************************
+     * FUNÇÕES RELACIONADAS AOS ITENS DO ORÇAMENTO
+     ***********************************************************************************************/
+
+    // Insere Lampada Atual
+    public long Insert_Itens_Of_Orcamento(String id_remoto,
+                                          String id_orcamento, String id_orcamento_remote,
+                                          String id_led, String id_led_remote,
+                                          int key_table,
+                                          String id_handson, String id_handson_remote,
+                                          String quantidade, String valor, String desconto, String enable) {
+
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        if ((id_remoto != null) && (!id_remoto.equals(""))) {
+            values.put("_id_list_of_orcamento_remote", id_remoto);
+        } else {
+            values.put("_id_list_of_orcamento_remote", (byte[]) null);
+        }
+
+        if (id_orcamento != null) {
+            values.put("_id_orcamento", id_orcamento);
+        }
+
+        if (id_orcamento_remote != null) {
+            values.put("_id_orcamento_remote", id_orcamento_remote);
+        }
+
+        if (id_led != null) {
+            values.put("_id_led", id_led);
+        }
+
+        if (id_led_remote != null) {
+            values.put("_id_led_remote", id_led_remote);
+        }
+
+        values.put("key_table", key_table);
+
+
+        if (id_handson != null) {
+            values.put("_id_hands_on", id_handson);
+        }
+
+        if (id_handson_remote != null) {
+            values.put("_id_hands_on_remote", id_handson_remote);
+        }
+
+        if (quantidade != null) {
+            values.put("quantidade", quantidade);
+        }
+
+        if (valor != null) {
+            values.put("_value", valor);
+        }
+
+        if (desconto != null) {
+            values.put("descount", desconto);
+        }
+
+        if (enable == null) {
+            values.put("enable", "1");
+        } else {
+            values.put("enable", enable);
+        }
+        return db.insert("list_of_orcamento", "", values);
+    }
+
+    public Cursor SelectItemOfOrcamentoByID(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("list_of_orcamento", null, "_id_list_of_orcamento = ?", new String[]{id}, null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    public int InsertOrcamentoRemoteInItensOfOrcamento(String RemoteID, String id_ItensOfOrcamento) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("_id_orcamento_remote", RemoteID);
+
+            // insert into Clientes values (...)
+            //Log.d(TAG, "ID Remoto inserido com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("list_of_orcamento", values, "_id_list_of_orcamento = ?", new String[]{id_ItensOfOrcamento});
+        } finally {
+            db.close();
+        }
+    }
+
+    public int InsertLEDRemoteInItensOfOrcamento(String RemoteID, String id_ItensOfOrcamento) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("_id_led_remote", RemoteID);
+
+            // insert into Clientes values (...)
+            //Log.d(TAG, "ID Remoto inserido com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("list_of_orcamento", values, "_id_list_of_orcamento = ?", new String[]{id_ItensOfOrcamento});
+        } finally {
+            db.close();
+        }
+    }
+
+    public int InsertHandsOnRemoteInItensOfOrcamento(String RemoteID, String id_ItensOfOrcamento) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("_id_hands_on_remote", RemoteID);
+
+            // insert into Clientes values (...)
+            //Log.d(TAG, "ID Remoto inserido com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("list_of_orcamento", values, "_id_list_of_orcamento = ?", new String[]{id_ItensOfOrcamento});
+        } finally {
+            db.close();
+        }
+    }
+
+    public long SelectItensOfOrcamentoRemoteIDById(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("list_of_orcamento", new String[]{"_id_list_of_orcamento_remote"}, "_id_list_of_orcamento = ?", new String[]{id}, null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                if (c.getString(c.getColumnIndex("_id_list_of_orcamento_remote")) != null) {
+                    return Integer.parseInt(c.getString(c.getColumnIndex("_id_list_of_orcamento_remote")));
+                } else {
+                    return 0;
+                }
+            } else {
+                return 0;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    public int InsertItemOfOrcamentoRemoteID(String RemoteID, String id_ItemOfOrcamento) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put("_id_list_of_orcamento_remote", RemoteID);
+
+            // insert into Clientes values (...)
+            //Log.d(TAG, "ID Remoto inserido com sucesso !");
+            //return db.insert("clientes", "", values);
+            return db.update("list_of_orcamento", values, "_id_list_of_orcamento = ?", new String[]{id_ItemOfOrcamento});
+        } finally {
+            db.close();
+        }
+    }
+
+    public Cursor SelectItensOfOrcamentoInsertPending() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("list_of_orcamento", null, "_id_list_of_orcamento_remote is null", null, null, null, "_id_list_of_orcamento", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    public String SelectLastRemoteIDofItensOfOrcamento() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("list_of_orcamento", new String[]{"max(_id_list_of_orcamento_remote) as _id_itens_remote"}, null, null, null, null, null, null);
+            c.moveToFirst();
+            return c.getString(c.getColumnIndex("_id_itens_remote"));
+        } finally {
+            db.close();
+        }
+    }
+
+    public long SelectItensOfOrcamentoIDByIDRemote(String id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("list_of_orcamento", new String[]{"_id_list_of_orcamento"}, "_id_list_of_orcamento_remote=?", new String[]{id}, null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                if (c.getString(c.getColumnIndex("_id_list_of_orcamento")) != null) {
+                    return Integer.parseInt(c.getString(c.getColumnIndex("_id_list_of_orcamento")));
+                } else {
+                    return 0;
+                }
+            } else {
+                return 0;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    public int DeleteItensOfOrcamento(String id) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("enable", "0");
+
+            return db.update("list_of_orcamento", values, "_id_list_of_orcamento = ?", new String[]{id});
+        } finally {
+            db.close();
+        }
+    }
+
+    public Cursor SelectItensOfOrcamentoDeletePending() {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("list_of_orcamento", null, "enable = ?", new String[]{"0"}, null, null, "_id_list_of_orcamento", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Select List of items in Orçamento
+    public Cursor Select_ListOfOrcamentoDescount(String id_orcamento, String id_orcamento_remote) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c;
+        try {
+
+            c = db.query("list_of_orcamento " +
+                         "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                    new String[]{"list_of_orcamento._id_list_of_orcamento as _id, list_of_orcamento.quantidade as quantidade, list_of_orcamento._value as value, list_of_orcamento.descount as descount"},
+                    //"WHERE" +
+                    "list_of_orcamento.enable = ? AND key_table = ? AND " +
+                            "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END"
+                    , new String[]{"1","3", id_orcamento, id_orcamento_remote}, null, null, null, null);
+            c.moveToFirst();
+
+            return c;
+        } finally {
+            db.close();
+        }
+    }
+
+
 }

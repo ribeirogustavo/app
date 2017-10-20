@@ -6,11 +6,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import br.com.ledstock.led_stock.R;
 import br.com.ledstock.led_stock.led_stock.domain.LedStockDB;
 import br.com.ledstock.led_stock.led_stock.fragments.FragmentContentEstudo;
+import br.com.ledstock.led_stock.led_stock.fragments.FragmentContentOrcamento;
 
 public class ActivityEmpty extends BaseActivity {
 
@@ -51,6 +54,26 @@ public class ActivityEmpty extends BaseActivity {
                             mySnack.show();
                             */
                         break;
+                    case "content_orcamento":
+
+                        FragmentContentOrcamento frag_orcamento = new FragmentContentOrcamento();
+                        frag_orcamento.setArguments(getIntent().getExtras());
+                        getSupportFragmentManager().beginTransaction().replace(R.id.container, frag_orcamento).commit();
+
+                        Long id_orcamento = getIntent().getLongExtra("id_orcamento", 0);
+                        db = new LedStockDB(getApplicationContext());
+
+                        if (actionBar != null) {
+                            //Seta o Título da ActionBar
+                            actionBar.setTitle(db.Select_NameofOrcamento(String.valueOf(id_orcamento)));
+                        }
+                        /*
+                        Snackbar mySnack = Snackbar.make(findViewById(R.id.mycoordinatorlayout), "Cliente Cadastrado !", Snackbar.LENGTH_LONG);
+                        mySnack.setActionTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
+                        mySnack.show();
+                        */
+                        break;
+
                 }
             }
         }
@@ -86,4 +109,5 @@ public class ActivityEmpty extends BaseActivity {
 
         }
     };
+
 }
