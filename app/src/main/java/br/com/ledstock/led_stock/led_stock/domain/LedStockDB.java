@@ -3141,7 +3141,7 @@ public class LedStockDB extends SQLiteOpenHelper {
     public Cursor Select_ListOrcamentos() {
         SQLiteDatabase db = getReadableDatabase();
         try {
-            Cursor c = db.query("orcamento, clientes", new String[]{"orcamento.*,clientes.nome as cliente, clientes._id_client_remote as id_remote"}, "enable=? AND CASE WHEN orcamento._id_client_remote is null THEN orcamento._id_cliente = clientes._id_cliente ELSE orcamento._id_client_remote = clientes._id_client_remote END", new String[]{"1"}, null, null, "orcamento", null);
+            Cursor c = db.query("orcamento, clientes", new String[]{"orcamento.*,clientes.nome as cliente, _id_orcamento_remote as id_remote"}, "enable=? AND CASE WHEN orcamento._id_client_remote is null THEN orcamento._id_cliente = clientes._id_cliente ELSE orcamento._id_client_remote = clientes._id_client_remote END", new String[]{"1"}, null, null, "orcamento", null);
             c.moveToFirst();
             return c;
         } finally {
