@@ -9,6 +9,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -71,10 +72,18 @@ public class Pedido extends android.support.v4.app.Fragment  {
     private PedidosAdapter.PedidosOnClickListener onClickPedido() {
         return new PedidosAdapter.PedidosOnClickListener() {
             @Override
-            public void onClickPedido(View view, int idx) {
+            public void onClickPedido(View view, Long idx, int table) {
                 Intent intent = new Intent(getContext(), ActivityEmpty.class);
-                intent.putExtra("action", "content_estudo");
-                intent.putExtra("id_estudo", idx);
+                Log.e("TEST", "Table: "+table);
+                Log.e("TEST", "indice: "+idx);
+                if (table == 1) {
+                    int indice = Integer.parseInt(String.valueOf(idx));
+                    intent.putExtra("action", "content_estudo");
+                    intent.putExtra("id_estudo", indice);
+                }else if (table == 2){
+                    intent.putExtra("action", "content_orcamento");
+                    intent.putExtra("id_orcamento", idx);
+                }
                 startActivity(intent);
             }
         };
@@ -83,7 +92,7 @@ public class Pedido extends android.support.v4.app.Fragment  {
     private void LoadRecyclerView() {
 
         LedStockDB db = new LedStockDB(getActivity());
-        Cursor c = db.Select_PedidosOfEstudo();
+        Cursor c = db.Select_Pedidos();
 
         if (c != null) {
             RecyclerView recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewPedido);

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -128,6 +129,9 @@ public class Dialog_AplicarDesconto_fragment extends DialogFragment {
                                     descount, "1");
 
                             updateremote.InsertItensOfOrcamentoRemote(id_itens, Long.parseLong(ID_ORCAMENTO));
+                            Intent intent = new Intent();
+                            intent.setAction("REFRESH_ESTATISTICAS_ORCAMENTO");
+                            getActivity().sendBroadcast(intent);
                         }
                     }
                 })

@@ -61,13 +61,16 @@ public class LedStockDB extends SQLiteOpenHelper {
         //Cria a tabela Orçamentos
         sqLiteDatabase.execSQL("create table if not exists orcamento (_id_orcamento integer primary key autoincrement, _id_orcamento_remote integer default null, _id_cliente integer default null, _id_client_remote integer default null, orcamento text, data text, psm integer default 0, pcm integer default 0, edited text, data_pedido text default null, enable text default 1);");
         //Cria a tabela list of Orcamento
-        sqLiteDatabase.execSQL("create table if not exists list_of_orcamento (_id_list_of_orcamento integer primary key autoincrement, _id_list_of_orcamento_remote integer default null, _id_orcamento integer default null, _id_orcamento_remote integer default null, _id_led integer default null, _id_led_remote integer default null, key_table text , _id_hands_on integer default null, _id_hands_on_remote integer default null, quantidade integer, _value double default null, descount double default null, enable text default 1);");
+        sqLiteDatabase.execSQL("create table if not exists list_of_orcamento (_id_list_of_orcamento integer primary key autoincrement, _id_list_of_orcamento_remote integer default null, _id_orcamento integer default null, _id_orcamento_remote integer default null, _id_led integer default null, _id_led_remote integer default null, key_table text , _id_hands_on integer default null, _id_hands_on_remote integer default null, quantidade integer, _value double default 0, descount double default 0, enable text default 1);");
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
+        //Cria a tabela Orçamentos
+        sqLiteDatabase.execSQL("create table if not exists orcamento (_id_orcamento integer primary key autoincrement, _id_orcamento_remote integer default null, _id_cliente integer default null, _id_client_remote integer default null, orcamento text, data text, psm integer default 0, pcm integer default 0, edited text, data_pedido text default null, enable text default 1);");
+        //Cria a tabela list of Orcamento
+        sqLiteDatabase.execSQL("create table if not exists list_of_orcamento (_id_list_of_orcamento integer primary key autoincrement, _id_list_of_orcamento_remote integer default null, _id_orcamento integer default null, _id_orcamento_remote integer default null, _id_led integer default null, _id_led_remote integer default null, key_table text , _id_hands_on integer default null, _id_hands_on_remote integer default null, quantidade integer, _value double default 0, descount double default 0, enable text default 1);");
     }
 
     /***********************************************************************************************
@@ -1911,10 +1914,51 @@ public class LedStockDB extends SQLiteOpenHelper {
     }
 
     //Select List of Lamps
-    public Cursor Select_PedidosOfEstudo() {
+    public Cursor Select_Pedidos() {
         SQLiteDatabase db = getReadableDatabase();
         try {
-            Cursor c = db.query("estudo, clientes", new String[]{"estudo.*,clientes.nome as cliente"}, "enable = ? AND CASE WHEN estudo._id_client_remote is null THEN estudo._id_cliente = clientes._id_cliente ELSE estudo._id_client_remote = clientes._id_client_remote END AND (psm = ? OR pcm = ?)", new String[]{"1", "1", "1"}, null, null, "descricao", null);
+            Cursor c = db.query("estudo, clientes",
+                    new String[]{"1 as `table`, " +
+                            "estudo._id_estudo as _id_table, " +
+                            "estudo.descricao, " +
+                            "clientes._id_cliente as _id_cliente, " +
+                            "estudo.`data`, " +
+                            "estudo.data_pedido as data_pedido, " +
+                            "estudo.psm as psm, " +
+                            "estudo.pcm as pcm, " +
+                            "estudo.enable, " +
+                            "clientes.nome as cliente, " +
+                            "estudo._id_estudo_remote as id_remote "},
+                    "estudo.enable = ? AND " +
+                                "CASE " +
+                                    "WHEN estudo._id_client_remote is null " +
+                                    "THEN estudo._id_cliente = clientes._id_cliente " +
+                                    "ELSE estudo._id_client_remote = clientes._id_client_remote " +
+                                "END " +
+                            "AND (estudo.psm = ? OR estudo.pcm = ?) " +
+                            "UNION " +
+                            "SELECT " +
+                            "2 as `table`, " +
+                            "orcamento._id_orcamento as _id_table, " +
+                            "clientes.nome as descricao, " +
+                            "clientes._id_cliente as _id_cliente, " +
+                            "orcamento.`data`, " +
+                            "orcamento.data_pedido as data_pedido, " +
+                            "orcamento.psm, " +
+                            "orcamento.pcm, " +
+                            "orcamento.enable, " +
+                            "clientes.nome as cliente, " +
+                            "orcamento._id_orcamento_remote as id_remote " +
+                            "from orcamento, clientes " +
+                            "WHERE " +
+                            "orcamento.enable = ? AND " +
+                            "CASE " +
+                            "WHEN orcamento._id_client_remote is null " +
+                            "THEN orcamento._id_cliente = clientes._id_cliente " +
+                            "ELSE orcamento._id_client_remote = clientes._id_client_remote " +
+                            "END " +
+                            "AND (orcamento.psm = ? OR orcamento.pcm = ?)",
+                    new String[]{"1", "1", "1","1", "1", "1"}, null, null, "descricao", null);
             c.moveToFirst();
             return c;
         } finally {
@@ -3193,7 +3237,7 @@ public class LedStockDB extends SQLiteOpenHelper {
 
             c = db.query("list_of_orcamento " +
                             "LEFT JOIN led_solution ON CASE WHEN list_of_orcamento._id_led_remote is null  THEN list_of_orcamento._id_led = led_solution._id_led ELSE list_of_orcamento._id_led_remote = led_solution._id_led_remote END " +
-                            "LEFT JOIN handson ON CASE WHEN list_of_orcamento._id_hands_on_remote is null  THEN list_of_orcamento._id_hands_on = handson._id_handson ELSE list_of_orcamento._id_hands_on_remote = handson._id_handson_remote END "+
+                            "LEFT JOIN handson ON CASE WHEN list_of_orcamento._id_hands_on_remote is null  THEN list_of_orcamento._id_hands_on = handson._id_handson ELSE list_of_orcamento._id_hands_on_remote = handson._id_handson_remote END " +
                             "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
                     new String[]{"list_of_orcamento._id_list_of_orcamento as _id, list_of_orcamento.quantidade as quantidade, list_of_orcamento._value as value, list_of_orcamento.descount as descount,led_solution.descricao as descricao, handson.descricao as descricao_mao"},
                     //"WHERE" +
@@ -3470,13 +3514,109 @@ public class LedStockDB extends SQLiteOpenHelper {
         try {
 
             c = db.query("list_of_orcamento " +
-                         "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
                     new String[]{"list_of_orcamento._id_list_of_orcamento as _id, list_of_orcamento.quantidade as quantidade, list_of_orcamento._value as value, list_of_orcamento.descount as descount"},
                     //"WHERE" +
                     "list_of_orcamento.enable = ? AND key_table = ? AND " +
                             "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END"
-                    , new String[]{"1","3", id_orcamento, id_orcamento_remote}, null, null, null, null);
+                    , new String[]{"1", "3", id_orcamento, id_orcamento_remote}, null, null, null, null);
             c.moveToFirst();
+
+            return c;
+        } finally {
+            db.close();
+        }
+    }
+
+    /***********************************************************************************************
+     * FUNÇÕES RELACIONADAS AS ESTATISTICAS DO ORÇAMENTO
+     ***********************************************************************************************/
+
+    public Cursor SelectEstatiOrcamento(String id_orcamento, String id_orcamento_remote) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("itens_of_estudo " +
+                            "INNER JOIN ambientes_estudo  ON " +
+                            "CASE WHEN (ambientes_estudo._id_ambiente_estudo_remote is null OR itens_of_estudo._id_ambiente_estudo_remote is null) THEN " +
+                            "ambientes_estudo._id_ambiente_estudo = itens_of_estudo._id_ambiente_estudo ELSE " +
+                            "ambientes_estudo._id_ambiente_estudo_remote = itens_of_estudo._id_ambiente_estudo_remote END " +
+                            "INNER JOIN ambientes ON " +
+                            "CASE WHEN (ambientes_estudo._id_ambiente_remote is null OR ambientes._id_ambiente_remote is null) THEN " +
+                            "ambientes_estudo._id_ambiente = ambientes._id_ambiente ELSE " +
+                            "ambientes_estudo._id_ambiente_remote = ambientes._id_ambiente_remote END " +
+                            "INNER JOIN lamp ON " +
+                            "CASE WHEN (itens_of_estudo._id_lamp_remote is null OR lamp._id_lamp_remote is null) THEN " +
+                            "itens_of_estudo._id_lamp = lamp._id_lamp ELSE " +
+                            "itens_of_estudo._id_lamp_remote = lamp._id_lamp_remote END " +
+                            "INNER JOIN led_solution ON " +
+                            "CASE WHEN (itens_of_estudo._id_led_remote is null OR led_solution._id_led_remote is null) THEN " +
+                            "itens_of_estudo._id_led = led_solution._id_led ELSE " +
+                            "itens_of_estudo._id_led_remote = led_solution._id_led_remote END ",
+                    new String[]{"ambientes.descricao as descricao, horas, quantidade, led_solution.potencia as pot_led, lamp.potencia as pot_lamp, valor"},
+                    "CASE WHEN itens_of_estudo._id_estudo_remote is null THEN itens_of_estudo._id_estudo = ? ELSE itens_of_estudo._id_estudo_remote = ? END AND itens_of_estudo.enable = ?",
+                    new String[]{id_orcamento, id_orcamento_remote, "1"},
+                    null, null, "ambientes.descricao", null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
+        } finally {
+            db.close();
+        }
+    }
+
+    //Select List of items in Orçamento
+    public Cursor Select_ListOfOrcamento(String id_orcamento, String id_orcamento_remote, int control) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = null;
+        try {
+            switch (control) {
+                //Led
+                case 1: {
+
+                    c = db.query("list_of_orcamento " +
+                                    "LEFT JOIN led_solution ON CASE WHEN list_of_orcamento._id_led_remote is null  THEN list_of_orcamento._id_led = led_solution._id_led ELSE list_of_orcamento._id_led_remote = led_solution._id_led_remote END " +
+                                    "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            new String[]{"SUM(list_of_orcamento.quantidade) as quantidade, SUM(led_solution.valor) as valor_total, SUM(list_of_orcamento.descount) as desconto, SUM(led_solution.valor - (list_of_orcamento.descount/100 * led_solution.valor)) as valor_com_desconto, SUM((list_of_orcamento.descount/100 * led_solution.valor)) as total_de_desconto"},
+                            //"WHERE" +
+                            "list_of_orcamento.enable = ? AND " +
+                                    "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                                    "key_table = ? "
+                            , new String[]{"1", id_orcamento, id_orcamento_remote, Integer.toString(control)}, null, null, null, null);
+                }
+                break;
+                //HandsOn
+                case 2: {
+                    c = db.query("list_of_orcamento " +
+                                    "LEFT JOIN handson ON CASE WHEN list_of_orcamento._id_hands_on_remote is null  THEN list_of_orcamento._id_hands_on = handson._id_handson ELSE list_of_orcamento._id_hands_on_remote = handson._id_handson_remote END " +
+                                    "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            new String[]{"SUM(list_of_orcamento.quantidade) as quantidade, SUM(handson.valor) as valor_total, SUM(list_of_orcamento.descount) as desconto, SUM(handson.valor - (list_of_orcamento.descount/100 * handson.valor)) as valor_com_desconto, SUM((list_of_orcamento.descount/100 * handson.valor)) as total_de_desconto"},
+                            //"WHERE" +
+                            "list_of_orcamento.enable = ? AND " +
+                                    "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                                    "key_table = ? "
+                            , new String[]{"1", id_orcamento, id_orcamento_remote, Integer.toString(control)}, null, null, null, null);
+                }
+                break;
+                //Desconto Total
+                case 3: {
+                    c = db.query("list_of_orcamento " +
+                                    "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            new String[]{"list_of_orcamento.descount as descount"},
+                            //"WHERE" +
+                            "list_of_orcamento.enable = ? AND " +
+                                    "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                                    "key_table = ? "
+                            , new String[]{"1", id_orcamento, id_orcamento_remote, Integer.toString(control)}, null, null, null, null);
+                }
+                break;
+
+            }
+            if (c != null) {
+                c.moveToFirst();
+            }
 
             return c;
         } finally {

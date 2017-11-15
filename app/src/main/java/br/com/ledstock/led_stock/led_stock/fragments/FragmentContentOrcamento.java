@@ -111,10 +111,10 @@ public class FragmentContentOrcamento extends Fragment {
             public void onPageSelected(int position) {
 
                 if (position == 1) {
-                    //getActivity().findViewById(R.id.fab).setVisibility(View.INVISIBLE);
-                    //Intent intent = new Intent();
-                    //intent.setAction("REFRESH_ESTATISTICAS_ESTUDO");
-                    //getActivity().sendBroadcast(intent);
+                    getActivity().findViewById(R.id.fab).setVisibility(View.INVISIBLE);
+                    Intent intent = new Intent();
+                    intent.setAction("REFRESH_ESTATISTICAS_ORCAMENTO");
+                    getActivity().sendBroadcast(intent);
                 } else {
                     getActivity().findViewById(R.id.fab).setVisibility(View.VISIBLE);
                 }
@@ -141,15 +141,7 @@ public class FragmentContentOrcamento extends Fragment {
                         if (tabLayout != null) {
                             if (tabLayout.getSelectedTabPosition() == 0) {
                                 Dialog_Itens_Of_Orcamento.show(getChildFragmentManager(), ID_ORCAMENTO, getActivity());
-                            } else if (tabLayout.getSelectedTabPosition() == 1) {
-                                //Dialog_LED_fragment.show(getChildFragmentManager(), 0, getActivity());
                             }
-
-                            /*
-                                Dialog_Place_fragment.show(getChildFragmentManager(), 0, getActivity());
-                            }else if (tabLayout.getSelectedTabPosition() == 4) {
-                                Dialog_User_fragment.show(getChildFragmentManager(), 0, getActivity());
-                            }*/
                         }
                     }
                 }
@@ -185,7 +177,6 @@ public class FragmentContentOrcamento extends Fragment {
         }else if(item.getItemId() == R.id.desconto){
 
             Dialog_AplicarDesconto_fragment.show(getChildFragmentManager(), String.valueOf(ID_ORCAMENTO), getActivity());
-
 
         } else if (item.getItemId() == R.id.enviar) {
 

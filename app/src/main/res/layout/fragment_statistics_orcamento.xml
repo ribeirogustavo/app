@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingBottom="5dp"
     android:paddingEnd="7dp"
     android:paddingLeft="7dp"
     android:paddingRight="7dp"
     android:paddingStart="7dp"
-    android:paddingTop="1dp">
+    android:paddingTop="8dp">
     <!-- A CardView that contains a TextView -->
     <android.support.v7.widget.CardView
         android:id="@+id/card_view"
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:foreground="?attr/selectableItemBackground"
-        android:paddingTop="2dp"
+        android:paddingTop="6dp"
         app:cardElevation="3dp"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="false"
@@ -33,7 +33,7 @@
             android:paddingBottom="9dp">
 
             <TextView
-                android:id="@+id/ambiente"
+                android:id="@+id/relatorio_orcamento"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="3dp"
@@ -42,7 +42,8 @@
                 android:paddingStart="8dp"
                 android:paddingTop="2dp"
                 android:textColor="@color/black"
-                android:textSize="27sp"
+                android:text="@string/relatorio_orcamento"
+                android:textSize="25sp"
                 android:textStyle="bold" />
 
             <View
@@ -64,11 +65,11 @@
                     android:paddingLeft="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="2dp"
-                    android:text="@string/potencia_atual"
-                    android:textSize="21sp" />
+                    android:text="@string/qnt_leds"
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/potencia_atual"
+                    android:id="@+id/qnt_leds"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
@@ -77,7 +78,7 @@
                     android:paddingRight="12dp"
                     android:paddingStart="12dp"
                     android:paddingTop="2dp"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -93,11 +94,11 @@
                     android:paddingLeft="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="2dp"
-                    android:text="@string/potencia_led"
-                    android:textSize="21sp" />
+                    android:text="@string/valor_leds"
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/potencia_led"
+                    android:id="@+id/valor_leds"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
@@ -106,7 +107,7 @@
                     android:paddingRight="12dp"
                     android:paddingStart="12dp"
                     android:paddingTop="2dp"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -122,11 +123,11 @@
                     android:paddingLeft="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="2dp"
-                    android:text="@string/conta_atual"
-                    android:textSize="21sp" />
+                    android:text="@string/desconto_leds"
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/conta_atual"
+                    android:id="@+id/desconto_leds"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
@@ -135,13 +136,14 @@
                     android:paddingRight="12dp"
                     android:paddingStart="12dp"
                     android:paddingTop="2dp"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="18dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -151,11 +153,11 @@
                     android:paddingLeft="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="2dp"
-                    android:text="@string/conta_ideal"
-                    android:textSize="21sp" />
+                    android:text="@string/valor_leds_desconto"
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/conta_ideal"
+                    android:id="@+id/valor_led_desconto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
@@ -164,95 +166,7 @@
                     android:paddingRight="12dp"
                     android:paddingStart="12dp"
                     android:paddingTop="2dp"
-                    android:textSize="21sp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingLeft="8dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="2dp"
-                    android:text="@string/investimento"
-                    android:textSize="21sp" />
-
-                <TextView
-                    android:id="@+id/investimento"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:paddingBottom="3dp"
-                    android:paddingEnd="12dp"
-                    android:paddingRight="12dp"
-                    android:paddingStart="12dp"
-                    android:paddingTop="2dp"
-                    android:textSize="21sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingLeft="8dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="2dp"
-                    android:text="@string/economia"
-                    android:textSize="21sp" />
-
-                <TextView
-                    android:id="@+id/economia"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:paddingBottom="3dp"
-                    android:paddingEnd="12dp"
-                    android:paddingRight="12dp"
-                    android:paddingStart="12dp"
-                    android:paddingTop="2dp"
-                    android:textSize="21sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingLeft="8dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="2dp"
-                    android:text="@string/retorno"
-                    android:textSize="21sp" />
-
-                <TextView
-                    android:id="@+id/retorno"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:paddingBottom="3dp"
-                    android:paddingEnd="12dp"
-                    android:paddingRight="12dp"
-                    android:paddingStart="12dp"
-                    android:paddingTop="2dp"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
 
             </LinearLayout>
 
@@ -269,11 +183,11 @@
                     android:paddingLeft="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="2dp"
-                    android:text="@string/mdo"
-                    android:textSize="21sp" />
+                    android:text="@string/qnt_mao"
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/mob"
+                    android:id="@+id/qnt_mao_de_obra"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
@@ -282,7 +196,187 @@
                     android:paddingRight="12dp"
                     android:paddingStart="12dp"
                     android:paddingTop="2dp"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/valor_mao"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/valor_mao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/desconto_mao"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/desconto_mao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/valor_mao_desconto"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/valor_mao_desconto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/valor_total"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/valor_total"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/desconto_valor_total"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/desconto_valor_total"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/valor_total_com_desconto"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/valor_total_com_desconto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="2dp"
+                    android:textSize="18sp" />
 
             </LinearLayout>
 

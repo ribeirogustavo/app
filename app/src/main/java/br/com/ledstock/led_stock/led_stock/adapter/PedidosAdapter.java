@@ -38,17 +38,20 @@ public class PedidosAdapter extends android.support.v7.widget.RecyclerView.Adapt
     @TargetApi(Build.VERSION_CODES.M)
     public void onBindViewHolder(final PedidosAdapter.PedidosViewHolder holder, int position) {
 
-        String id_remote = null;
-        String cliente = null;
-        String data = null;
-        String psm = null;
-        String pcm = null;
-        String FormatNumber = null;
+        String id_remote;
+        String cliente;
+        String data;
+        String psm;
+        String pcm;
+        String FormatNumber;
+        final int table;
 
         //Atualiza a View
         c.moveToPosition(position);
 
-        id_remote = c.getString(c.getColumnIndex("_id_estudo_remote"));
+        table = c.getInt(c.getColumnIndex("table"));
+
+        id_remote = c.getString(c.getColumnIndex("id_remote"));
         cliente = c.getString(c.getColumnIndex("cliente"));
         data = c.getString(c.getColumnIndex("data_pedido"));
         psm = c.getString(c.getColumnIndex("psm"));
@@ -59,7 +62,13 @@ public class PedidosAdapter extends android.support.v7.widget.RecyclerView.Adapt
         } else {
             FormatNumber = data.replace("/", "");
             char num[] = FormatNumber.toCharArray();
-            holder.numPedido.setText("#" + num[6] + num[7] + num[3] + num[2] + num[0] + num[1] + id_remote);
+            String concat;
+            if (table == 1){
+                concat = "#" + "1" + num[6] + num[7] + num[3] + num[2] + num[0] + num[1] + id_remote;
+            }else {
+                concat = "#" + "2" + num[6] + num[7] + num[3] + num[2] + num[0] + num[1] + id_remote;
+            }
+            holder.numPedido.setText(concat);
         }
         holder.cliente.setText(cliente);
         if (psm.equals("1")) {
@@ -77,7 +86,7 @@ public class PedidosAdapter extends android.support.v7.widget.RecyclerView.Adapt
                     int pos = holder.getAdapterPosition();
                     c.moveToPosition(pos);
                     //A variavel position é final
-                    pedidosOnClickListener.onClickPedido(holder.itemView, c.getInt(c.getColumnIndex("_id_estudo")));
+                    pedidosOnClickListener.onClickPedido(holder.itemView, c.getLong(c.getColumnIndex("_id_table")), table);
                 }
             });
         }
@@ -89,7 +98,7 @@ public class PedidosAdapter extends android.support.v7.widget.RecyclerView.Adapt
     }
 
     public interface PedidosOnClickListener {
-        void onClickPedido(View view, int idx);
+        void onClickPedido(View view, Long idx, int table);
     }
 
     //ViewHolder com as views

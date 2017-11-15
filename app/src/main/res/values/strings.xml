@@ -33,6 +33,9 @@
     <string name="delete">Excluir</string>
     <string name="descount">Desconto em %</string>
     <string name="descounttwodot">Desconto:</string>
+    <string name="desconto_leds">Desconto dos Leds:</string>
+    <string name="desconto_mao">Desconto Mão de Obra:</string>
+    <string name="desconto_valor_total">Desconto sobre valor total:</string>
 
     <!--   E   -->
     <string name="estudo">Estudo</string>
@@ -100,9 +103,12 @@
     <string name="quantidade">Quantidade</string>
     <string name="quantidadetwodot">Quantidade:</string>
     <string name="qnt">Qnt:</string>
+    <string name="qnt_leds">Quantidade de Leds:</string>
+    <string name="qnt_mao">Quantidade de Mão de Obra:</string>
 
     <!--   R   -->
     <string name="retorno">Retorno Mês:</string>
+    <string name="relatorio_orcamento">Relatório Orçamento</string>
 
     <!--   S   -->
     <string name="salvar">Salvar</string>
@@ -124,6 +130,12 @@
     <!--   V   -->
     <string name="valor">Valor</string>
     <string name="valor_revenda">Valor Revenda</string>
+    <string name="valor_leds">Valor dos Leds:</string>
+    <string name="valor_mao">Valor Mão de Obra:</string>
+    <string name="valor_leds_desconto">Valor dos Leds c/ Desc:</string>
+    <string name="valor_mao_desconto">Valor Mão de Obra c/ Desc:</string>
+    <string name="valor_total">Valor Total:</string>
+    <string name="valor_total_com_desconto">Valor Total c/ Desc:</string>
 
     <!--   W   -->
     <string name="w">W</string>

@@ -56,7 +56,8 @@ public class OrcamentosAdapter extends android.support.v7.widget.RecyclerView.Ad
         } else {
             FormatNumber = data.replace("/", "");
             char num[] = FormatNumber.toCharArray();
-            holder.orcamento.setText(""+ num[6] + num[7] + num[2] + num[3] + num[0] + num[1] + id_remote);
+            String concat = ""+ "2" + num[6] + num[7] + num[2] + num[3] + num[0] + num[1] + id_remote;
+            holder.orcamento.setText(concat);
         }
 
         holder.cliente.setText(cliente);

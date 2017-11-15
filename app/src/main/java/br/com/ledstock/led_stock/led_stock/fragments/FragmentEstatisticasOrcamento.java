@@ -9,12 +9,16 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import br.com.ledstock.led_stock.R;
 import br.com.ledstock.led_stock.led_stock.adapter.EstatisticaAdapter;
@@ -27,7 +31,6 @@ public class FragmentEstatisticasOrcamento extends android.support.v4.app.Fragme
 
     private View view_frag;
     private Long ID_ORCAMENTO;
-    public List<Stat> Statistics;
     RecyclerView recyclerView;
 
     public FragmentEstatisticasOrcamento() {
@@ -57,208 +60,95 @@ public class FragmentEstatisticasOrcamento extends android.support.v4.app.Fragme
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        String ambiente;
-        String ambiente_anterior = null;
-        double potencia_led;
-        double potencia_lamp;
-        double Potencia_atual = 0;
-        double Potencia_led = 0;
-        double Conta_atual = 0;
-        double Conta_ideal = 0;
-        int horas, quantidade, i;
-        double Preco_KWH;
-        double valor;
-        double investimento = 0;
 
-        if (Statistics != null) {
-            Statistics.clear();
-        }
+        int qnt_leds = 0;
+        double valor_leds = 0;
+        double desconto_leds = 0;
+        double valor_leds_com_desconto = 0;
+
+        int qnt_hands = 0;
+        double valor_hands = 0;
+        double desconto_hands = 0;
+        double valor_hands_com_desconto = 0;
+
+        double desconto_total = 0;
+        double valor_total = 0;
 
         View view = inflater.inflate(R.layout.fragment_statistics_orcamento, container, false);
 
         view_frag = view;
 
-        Statistics = new ArrayList<>();
-
-        /*
         LedStockDB db = new LedStockDB(getActivity());
-        Preco_KWH = db.Select_KWh();
 
-        String ID_ESTUDO_REMOTE = String.valueOf(db.SelectEstudoRemoteIDById(String.valueOf(ID_ESTUDO)));
+        String ID_ORCAMENTO_REMOTE = String.valueOf(db.SelectOrcamentoRemoteIDById(String.valueOf(ID_ORCAMENTO)));
         Cursor c;
-        if (!ID_ESTUDO_REMOTE.equals("0")) {
-            c = db.SelectEstatiLamps(String.valueOf(ID_ESTUDO), ID_ESTUDO_REMOTE);
-        } else {
-            c = db.SelectEstatiLamps(String.valueOf(ID_ESTUDO), "");
+
+        c = db.Select_ListOfOrcamento(String.valueOf(ID_ORCAMENTO), ID_ORCAMENTO_REMOTE, 1);
+
+        qnt_leds = c.getInt(c.getColumnIndex("quantidade"));
+        valor_leds = c.getDouble(c.getColumnIndex("valor_total"));
+        desconto_leds = c.getDouble(c.getColumnIndex("total_de_desconto"));
+        valor_leds_com_desconto = c.getDouble(c.getColumnIndex("valor_com_desconto"));
+
+        TextView textView_qnt_leds = (TextView) view.findViewById(R.id.qnt_leds);
+        textView_qnt_leds.setText(String.valueOf(qnt_leds));
+
+        TextView textView_valor_leds = (TextView) view.findViewById(R.id.valor_leds);
+        String valor_leds_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_leds); //String.valueOf(valor_leds);
+        textView_valor_leds.setText(valor_leds_text);
+
+        TextView textView_desconto_leds = (TextView) view.findViewById(R.id.desconto_leds);
+        String valor_desconto_text = "R$ "+  String.format(Locale.getDefault(),"%.2f", desconto_leds); //String.valueOf(desconto_leds);
+        textView_desconto_leds.setText(valor_desconto_text);
+
+        TextView textView_valor_led_com_desconto = (TextView) view.findViewById(R.id.valor_led_desconto);
+        String valor_valor_led_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_leds_com_desconto);  //String.valueOf(valor_leds_com_desconto);
+        textView_valor_led_com_desconto.setText(valor_valor_led_text);
+
+        c = db.Select_ListOfOrcamento(String.valueOf(ID_ORCAMENTO), ID_ORCAMENTO_REMOTE, 2);
+
+        qnt_hands = c.getInt(c.getColumnIndex("quantidade"));
+        valor_hands = c.getDouble(c.getColumnIndex("valor_total"));
+        desconto_hands = c.getDouble(c.getColumnIndex("total_de_desconto"));
+        valor_hands_com_desconto = c.getDouble(c.getColumnIndex("valor_com_desconto"));
+
+        TextView textView_qnt_hands = (TextView) view.findViewById(R.id.qnt_mao_de_obra);
+        textView_qnt_hands.setText(String.valueOf(qnt_hands));
+
+        TextView textView_valor_hands = (TextView) view.findViewById(R.id.valor_mao);
+        String valor_hands_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_hands); //String.valueOf(valor_leds);
+        textView_valor_hands.setText(valor_hands_text);
+
+        TextView textView_desconto_hands = (TextView) view.findViewById(R.id.desconto_mao);
+        String valor_desconto_text_hands = "R$ "+  String.format(Locale.getDefault(),"%.2f", desconto_hands); //String.valueOf(desconto_leds);
+        textView_desconto_hands.setText(valor_desconto_text_hands);
+
+        TextView textView_valor_hands_com_desconto = (TextView) view.findViewById(R.id.valor_mao_desconto);
+        String valor_hands_com_desconto_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_hands_com_desconto);  //String.valueOf(valor_leds_com_desconto);
+        textView_valor_hands_com_desconto.setText(valor_hands_com_desconto_text);
+
+        TextView textView_valor_total = (TextView) view.findViewById(R.id.valor_total);
+        Double valor = valor_leds_com_desconto + valor_hands_com_desconto;
+        String valor_valor_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor);
+        textView_valor_total.setText(valor_valor_text);
+
+        c = db.Select_ListOfOrcamento(String.valueOf(ID_ORCAMENTO), ID_ORCAMENTO_REMOTE, 3);
+
+        if (c.getCount() > 0) {
+            desconto_total = c.getDouble(c.getColumnIndex("descount"));
+        }else{
+            desconto_total = 0;
         }
 
-        i = 1;
-        if (c != null) {
-            int lenght = c.getCount();
-            do {
-                ambiente = c.getString(c.getColumnIndex("descricao"));
-                potencia_led = c.getDouble(c.getColumnIndex("pot_led"));
-                potencia_lamp = c.getDouble(c.getColumnIndex("pot_lamp"));
-                horas = c.getInt(c.getColumnIndex("horas"));
-                quantidade = c.getInt(c.getColumnIndex("quantidade"));
-                valor = c.getDouble(c.getColumnIndex("valor"));
+        TextView textView_desconto_valor_total = (TextView) view.findViewById(R.id.desconto_valor_total);
+        String desconto_total_hands_text = String.format(Locale.getDefault(),"%.2f", desconto_total) + "%";
+        textView_desconto_valor_total.setText(desconto_total_hands_text);
 
-                if (!ambiente.equals(ambiente_anterior)) {
-                    if (ambiente_anterior == null) {
-                        Potencia_atual = potencia_lamp * quantidade;
-                        Potencia_led = potencia_led * quantidade;
-                        Conta_atual = (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                        Conta_ideal = (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                        investimento = valor * quantidade;
-                        ambiente_anterior = ambiente;
+        TextView textView_valor_total_com_desconto = (TextView) view.findViewById(R.id.valor_total_com_desconto);
+        Double val_tot = valor - (valor * desconto_total/100);
+        String valor_total_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", val_tot);
+        textView_valor_total_com_desconto.setText(valor_total_text);
 
-                        if (lenght == 1) {
-                            Stat Estatistica = new Stat();
-                            Estatistica.ambi = ambiente_anterior;
-                            Estatistica.Pot_Atual = String.valueOf(Potencia_atual);
-                            Estatistica.conta_atual = Conta_atual;
-                            Estatistica.Pot_Led = String.valueOf(Potencia_led);
-                            Estatistica.conta_ideal = Conta_ideal;
-                            Estatistica.investimento = investimento;
-                            Estatistica.economia = (Conta_atual - Conta_ideal);
-                            Estatistica.retorno = (investimento / Estatistica.economia);
-                            Statistics.add(Estatistica);
-                        }
-                    } else {
-                        Stat Estatistica = new Stat();
-                        Estatistica.ambi = ambiente_anterior;
-                        Estatistica.Pot_Atual = String.valueOf(Potencia_atual);
-                        Estatistica.conta_atual = Conta_atual;
-                        Estatistica.Pot_Led = String.valueOf(Potencia_led);
-                        Estatistica.conta_ideal = Conta_ideal;
-                        Estatistica.investimento = investimento;
-                        Estatistica.economia = (Conta_atual - Conta_ideal);
-                        Estatistica.retorno = (investimento / Estatistica.economia);
-                        Statistics.add(Estatistica);
-
-                        Potencia_atual = potencia_lamp * quantidade;
-                        Potencia_led = potencia_led * quantidade;
-                        Conta_atual = (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                        Conta_ideal = (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                        investimento = valor * quantidade;
-                        ambiente_anterior = ambiente;
-
-                        if (lenght == i) {
-                            Stat Final = new Stat();
-                            Final.ambi = ambiente;
-                            Final.Pot_Atual = String.valueOf(Potencia_atual);
-                            Final.conta_atual = Conta_atual;
-                            Final.Pot_Led = String.valueOf(Potencia_led);
-                            Final.conta_ideal = Conta_ideal;
-                            Final.investimento = investimento;
-                            Final.economia = (Conta_atual - Conta_ideal);
-                            Final.retorno = (investimento / Final.economia);
-                            Statistics.add(Final);
-                        }
-                    }
-                } else {
-                    if (lenght != i) {
-                        Potencia_atual = potencia_lamp * quantidade;
-                        Potencia_led = potencia_led * quantidade;
-                        Conta_atual += (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                        Conta_ideal += (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                        investimento += valor *quantidade;
-                        ambiente_anterior = ambiente;
-                    } else {
-                        Potencia_atual = potencia_lamp * quantidade;
-                        Potencia_led = potencia_led * quantidade;
-                        Conta_atual += (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                        Conta_ideal += (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                        investimento += valor *quantidade;
-
-                        Stat Estatistica = new Stat();
-                        Estatistica.ambi = ambiente;
-                        Estatistica.Pot_Atual = String.valueOf(Potencia_atual);
-                        Estatistica.conta_atual = Conta_atual;
-                        Estatistica.Pot_Led = String.valueOf(Potencia_led);
-                        Estatistica.conta_ideal = Conta_ideal;
-                        Estatistica.investimento = investimento;
-                        Estatistica.economia = (Conta_atual - Conta_ideal);
-                        Estatistica.retorno = (investimento / Estatistica.economia);
-                        Statistics.add(Estatistica);
-
-                        ambiente_anterior = ambiente;
-                        Potencia_atual = 0;
-                        Potencia_led = 0;
-                        Conta_atual = 0;
-                        Conta_ideal = 0;
-                        investimento = 0;
-                    }
-                }
-                i++;
-            } while (c.moveToNext());
-            c.close();
-        }
-
-        Cursor c1;
-        if (!ID_ESTUDO_REMOTE.equals("0")) {
-            c1 = db.SelectEstatiHandsOn(String.valueOf(ID_ESTUDO), ID_ESTUDO_REMOTE);
-        } else {
-            c1 = db.SelectEstatiHandsOn(String.valueOf(ID_ESTUDO), "");
-        }
-
-        if (c1 != null) {
-            do {
-                String amb = c1.getString(c1.getColumnIndex("descricao"));
-                double valor_mob = c1.getDouble(c1.getColumnIndex("valor_mob"));
-
-                for (Stat p : Statistics) {
-                    if (p.ambi.equals(amb)) {
-                        int index = Statistics.indexOf(p);
-                        Stat Estat = new Stat();
-                        Estat.ambi = p.ambi;
-                        Estat.Pot_Atual = p.Pot_Atual;
-                        Estat.Pot_Led = p.Pot_Led;
-                        Estat.investimento = p.investimento;
-                        Estat.conta_atual = p.conta_atual;
-                        Estat.conta_ideal = p.conta_ideal;
-                        Estat.economia = p.economia;
-                        Estat.retorno = p.retorno;
-                        Estat.mdo = valor_mob;
-                        Statistics.set(index, Estat);
-                    }
-                }
-            } while (c1.moveToNext());
-            c1.close();
-        }
-        db.close();
-
-        if (Statistics != null) {
-            Stat Total = new Stat();
-            Total.ambi = "Total";
-            double potlamp = 0.0;
-            double potled = 0.0;
-
-            for (Stat p : Statistics) {
-                potlamp += Double.parseDouble(p.Pot_Atual);
-                potled += Double.parseDouble(p.Pot_Led);
-                Total.investimento += p.investimento;
-                Total.conta_atual += p.conta_atual;
-                Total.conta_ideal += p.conta_ideal;
-                Total.economia += p.economia;
-                Total.mdo += p.mdo;
-            }
-            Total.Pot_Atual = String.valueOf(potlamp);
-            Total.Pot_Led = String.valueOf(potled);
-            Total.retorno = Total.investimento / Total.economia;
-            if (isNaN(Total.retorno)){
-                Total.retorno = 0.0;
-            }
-            Statistics.add(Total);
-        }
-
-        recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewEstatistica);
-        recyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager mLayoutManger = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(mLayoutManger);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-
-        recyclerView.setAdapter(new EstatisticaAdapter(getActivity(), Statistics, null));*/
 
         return view;
     }
@@ -267,202 +157,91 @@ public class FragmentEstatisticasOrcamento extends android.support.v4.app.Fragme
     private BroadcastReceiver RefreshEstatisticasOrcamento = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context_receiver, Intent intent) {
-            /*
-            String ambiente;
-            String ambiente_anterior = null;
-            double potencia_led;
-            double potencia_lamp;
-            double Potencia_atual = 0;
-            double Potencia_led = 0;
-            double Conta_atual = 0;
-            double Conta_ideal = 0;
-            int horas, quantidade, i;
-            double Preco_KWH;
-            double valor;
-            double investimento = 0;
 
-            if (Statistics != null) {
-                Statistics.clear();
-            }
+            int qnt_leds = 0;
+            double valor_leds = 0;
+            double desconto_leds = 0;
+            double valor_leds_com_desconto = 0;
+
+            int qnt_hands = 0;
+            double valor_hands = 0;
+            double desconto_hands = 0;
+            double valor_hands_com_desconto = 0;
+
+            double desconto_total = 0;
+            double valor_total = 0;
 
             LedStockDB db = new LedStockDB(getActivity());
-            Preco_KWH = db.Select_KWh();
 
-            String ID_ESTUDO_REMOTE = String.valueOf(db.SelectEstudoRemoteIDById(String.valueOf(ID_ESTUDO)));
+            String ID_ORCAMENTO_REMOTE = String.valueOf(db.SelectOrcamentoRemoteIDById(String.valueOf(ID_ORCAMENTO)));
             Cursor c;
-            if (!ID_ESTUDO_REMOTE.equals("0")) {
-                c = db.SelectEstatiLamps(String.valueOf(ID_ESTUDO), ID_ESTUDO_REMOTE);
-            } else {
-                c = db.SelectEstatiLamps(String.valueOf(ID_ESTUDO), "");
+
+            c = db.Select_ListOfOrcamento(String.valueOf(ID_ORCAMENTO), ID_ORCAMENTO_REMOTE, 1);
+
+            qnt_leds = c.getInt(c.getColumnIndex("quantidade"));
+            valor_leds = c.getDouble(c.getColumnIndex("valor_total"));
+            desconto_leds = c.getDouble(c.getColumnIndex("total_de_desconto"));
+            valor_leds_com_desconto = c.getDouble(c.getColumnIndex("valor_com_desconto"));
+
+            TextView textView_qnt_leds = (TextView) view_frag.findViewById(R.id.qnt_leds);
+            textView_qnt_leds.setText(String.valueOf(qnt_leds));
+
+            TextView textView_valor_leds = (TextView) view_frag.findViewById(R.id.valor_leds);
+            String valor_leds_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_leds); //String.valueOf(valor_leds);
+            textView_valor_leds.setText(valor_leds_text);
+
+            TextView textView_desconto_leds = (TextView) view_frag.findViewById(R.id.desconto_leds);
+            String valor_desconto_text = "R$ "+  String.format(Locale.getDefault(),"%.2f", desconto_leds); //String.valueOf(desconto_leds);
+            textView_desconto_leds.setText(valor_desconto_text);
+
+            TextView textView_valor_led_desconto_leds = (TextView) view_frag.findViewById(R.id.valor_led_desconto);
+            String valor_valor_led_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_leds_com_desconto);  //String.valueOf(valor_leds_com_desconto);
+            textView_valor_led_desconto_leds.setText(valor_valor_led_text);
+
+            c = db.Select_ListOfOrcamento(String.valueOf(ID_ORCAMENTO), ID_ORCAMENTO_REMOTE, 2);
+
+            qnt_hands = c.getInt(c.getColumnIndex("quantidade"));
+            valor_hands = c.getDouble(c.getColumnIndex("valor_total"));
+            desconto_hands = c.getDouble(c.getColumnIndex("total_de_desconto"));
+            valor_hands_com_desconto = c.getDouble(c.getColumnIndex("valor_com_desconto"));
+
+            TextView textView_qnt_hands = (TextView) view_frag.findViewById(R.id.qnt_mao_de_obra);
+            textView_qnt_hands.setText(String.valueOf(qnt_hands));
+
+            TextView textView_valor_hands = (TextView) view_frag.findViewById(R.id.valor_mao);
+            String valor_hands_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_hands); //String.valueOf(valor_leds);
+            textView_valor_hands.setText(valor_hands_text);
+
+            TextView textView_desconto_hands = (TextView) view_frag.findViewById(R.id.desconto_mao);
+            String valor_desconto_text_hands = "R$ "+  String.format(Locale.getDefault(),"%.2f", desconto_hands); //String.valueOf(desconto_leds);
+            textView_desconto_hands.setText(valor_desconto_text_hands);
+
+            TextView textView_valor_hands_com_desconto = (TextView) view_frag.findViewById(R.id.valor_mao_desconto);
+            String valor_hands_com_desconto_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor_hands_com_desconto);  //String.valueOf(valor_leds_com_desconto);
+            textView_valor_hands_com_desconto.setText(valor_hands_com_desconto_text);
+
+            TextView textView_valor_total = (TextView) view_frag.findViewById(R.id.valor_total);
+            Double valor = valor_leds_com_desconto + valor_hands_com_desconto;
+            String valor_valor_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", valor);
+            textView_valor_total.setText(valor_valor_text);
+
+            c = db.Select_ListOfOrcamento(String.valueOf(ID_ORCAMENTO), ID_ORCAMENTO_REMOTE, 3);
+
+            if (c.getCount() > 0) {
+                desconto_total = c.getDouble(c.getColumnIndex("descount"));
+            }else{
+                desconto_total = 0;
             }
 
-            i = 1;
-            if (c != null) {
-                int lenght = c.getCount();
-                do {
-                    ambiente = c.getString(c.getColumnIndex("descricao"));
-                    potencia_led = c.getDouble(c.getColumnIndex("pot_led"));
-                    potencia_lamp = c.getDouble(c.getColumnIndex("pot_lamp"));
-                    horas = c.getInt(c.getColumnIndex("horas"));
-                    quantidade = c.getInt(c.getColumnIndex("quantidade"));
-                    valor = c.getDouble(c.getColumnIndex("valor"));
+            TextView textView_desconto_valor_total = (TextView) view_frag.findViewById(R.id.desconto_valor_total);
+            String desconto_total_hands_text = String.format(Locale.getDefault(),"%.2f", desconto_total) + "%";
+            textView_desconto_valor_total.setText(desconto_total_hands_text);
 
-                    if (!ambiente.equals(ambiente_anterior)) {
-                        if (ambiente_anterior == null) {
-                            Potencia_atual = potencia_lamp * quantidade;
-                            Potencia_led = potencia_led * quantidade;
-                            Conta_atual = (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                            Conta_ideal = (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                            investimento = valor * quantidade;
-                            ambiente_anterior = ambiente;
+            TextView textView_valor_total_com_desconto = (TextView) view_frag.findViewById(R.id.valor_total_com_desconto);
+            Double val_tot = valor - (valor * desconto_total/100);
+            String valor_total_text = "R$ "+ String.format(Locale.getDefault(),"%.2f", val_tot);
+            textView_valor_total_com_desconto.setText(valor_total_text);
 
-                            if (lenght == 1) {
-                                Stat Estatistica = new Stat();
-                                Estatistica.ambi = ambiente_anterior;
-                                Estatistica.Pot_Atual = String.valueOf(Potencia_atual);
-                                Estatistica.conta_atual = Conta_atual;
-                                Estatistica.Pot_Led = String.valueOf(Potencia_led);
-                                Estatistica.conta_ideal = Conta_ideal;
-                                Estatistica.investimento = investimento;
-                                Estatistica.economia = (Conta_atual - Conta_ideal);
-                                Estatistica.retorno = (investimento / Estatistica.economia);
-                                Statistics.add(Estatistica);
-                            }
-                        } else {
-                            Stat Estatistica = new Stat();
-                            Estatistica.ambi = ambiente_anterior;
-                            Estatistica.Pot_Atual = String.valueOf(Potencia_atual);
-                            Estatistica.conta_atual = Conta_atual;
-                            Estatistica.Pot_Led = String.valueOf(Potencia_led);
-                            Estatistica.conta_ideal = Conta_ideal;
-                            Estatistica.investimento = investimento;
-                            Estatistica.economia = (Conta_atual - Conta_ideal);
-                            Estatistica.retorno = (investimento / Estatistica.economia);
-                            Statistics.add(Estatistica);
-
-                            Potencia_atual = potencia_lamp * quantidade;
-                            Potencia_led = potencia_led * quantidade;
-                            Conta_atual = (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                            Conta_ideal = (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                            investimento = valor * quantidade;
-                            ambiente_anterior = ambiente;
-
-                            if (lenght == i) {
-                                Stat Final = new Stat();
-                                Final.ambi = ambiente;
-                                Final.Pot_Atual = String.valueOf(Potencia_atual);
-                                Final.conta_atual = Conta_atual;
-                                Final.Pot_Led = String.valueOf(Potencia_led);
-                                Final.conta_ideal = Conta_ideal;
-                                Final.investimento = investimento;
-                                Final.economia = (Conta_atual - Conta_ideal);
-                                Final.retorno = (investimento / Final.economia);
-                                Statistics.add(Final);
-                            }
-                        }
-                    } else {
-                        if (lenght != i) {
-                            Potencia_atual = potencia_lamp * quantidade;
-                            Potencia_led = potencia_led * quantidade;
-                            Conta_atual += (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                            Conta_ideal += (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                            investimento += valor *quantidade;
-                            ambiente_anterior = ambiente;
-                        } else {
-                            Potencia_atual = potencia_lamp * quantidade;
-                            Potencia_led = potencia_led * quantidade;
-                            Conta_atual += (((Potencia_atual / 1000) * horas * 30) * Preco_KWH);
-                            Conta_ideal += (((Potencia_led / 1000) * horas * 30) * Preco_KWH);
-                            investimento += valor *quantidade;
-
-                            Stat Estatistica = new Stat();
-                            Estatistica.ambi = ambiente;
-                            Estatistica.Pot_Atual = String.valueOf(Potencia_atual);
-                            Estatistica.conta_atual = Conta_atual;
-                            Estatistica.Pot_Led = String.valueOf(Potencia_led);
-                            Estatistica.conta_ideal = Conta_ideal;
-                            Estatistica.investimento = investimento;
-                            Estatistica.economia = (Conta_atual - Conta_ideal);
-                            Estatistica.retorno = (investimento / Estatistica.economia);
-                            Statistics.add(Estatistica);
-
-                            ambiente_anterior = ambiente;
-                            Potencia_atual = 0;
-                            Potencia_led = 0;
-                            Conta_atual = 0;
-                            Conta_ideal = 0;
-                            investimento = 0;
-                        }
-                    }
-                    i++;
-                } while (c.moveToNext());
-                c.close();
-            }
-
-            Cursor c1;
-            if (!ID_ESTUDO_REMOTE.equals("0")) {
-                c1 = db.SelectEstatiHandsOn(String.valueOf(ID_ESTUDO), ID_ESTUDO_REMOTE);
-            } else {
-                c1 = db.SelectEstatiHandsOn(String.valueOf(ID_ESTUDO), "");
-            }
-
-            if (c1 != null) {
-                do {
-                    String amb = c1.getString(c1.getColumnIndex("descricao"));
-                    double valor_mob = c1.getDouble(c1.getColumnIndex("valor_mob"));
-
-                    for (Stat p : Statistics) {
-                        if (p.ambi.equals(amb)) {
-                            int index = Statistics.indexOf(p);
-                            Stat Estat = new Stat();
-                            Estat.ambi = p.ambi;
-                            Estat.Pot_Atual = p.Pot_Atual;
-                            Estat.Pot_Led = p.Pot_Led;
-                            Estat.investimento = p.investimento;
-                            Estat.conta_atual = p.conta_atual;
-                            Estat.conta_ideal = p.conta_ideal;
-                            Estat.economia = p.economia;
-                            Estat.retorno = p.retorno;
-                            Estat.mdo = valor_mob;
-                            Statistics.set(index, Estat);
-                        }
-                    }
-                } while (c1.moveToNext());
-                c1.close();
-            }
-            db.close();
-
-            if (Statistics != null) {
-                Stat Total = new Stat();
-                Total.ambi = "Total";
-                double potlamp = 0.0;
-                double potled = 0.0;
-
-                for (Stat p : Statistics) {
-                    potlamp += Double.parseDouble(p.Pot_Atual);
-                    potled += Double.parseDouble(p.Pot_Led);
-                    Total.investimento += p.investimento;
-                    Total.conta_atual += p.conta_atual;
-                    Total.conta_ideal += p.conta_ideal;
-                    Total.economia += p.economia;
-                    Total.mdo += p.mdo;
-                }
-                Total.Pot_Atual = String.valueOf(potlamp);
-                Total.Pot_Led = String.valueOf(potled);
-                Total.retorno = Total.investimento / Total.economia;
-                if (isNaN(Total.retorno)){
-                    Total.retorno = 0.0;
-                }
-                Statistics.add(Total);
-            }
-
-            recyclerView = (RecyclerView) view_frag.findViewById(R.id.recyclerviewEstatistica);
-            recyclerView.setHasFixedSize(true);
-            RecyclerView.LayoutManager mLayoutManger = new LinearLayoutManager(getActivity());
-            recyclerView.setLayoutManager(mLayoutManger);
-            recyclerView.setItemAnimator(new DefaultItemAnimator());
-
-            recyclerView.setAdapter(new EstatisticaAdapter(getActivity(), Statistics, null));*/
 
         }
     };
