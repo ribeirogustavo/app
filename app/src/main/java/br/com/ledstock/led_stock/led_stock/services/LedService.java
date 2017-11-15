@@ -33,8 +33,8 @@ public class LedService extends Service {
 
     //Configura ambiente de Teste e ambiente de produção
     //public static final String url = Configuration.url_test;
-    //public static final String url = Configuration.url_production;
-    public static final String url = Configuration.url_localhost;
+    public static final String url = Configuration.url_production;
+    //public static final String url = Configuration.url_localhost;
     //Fim da Configuração Teste/Produção
 
     private final String url_post = url + "?{get_method}";

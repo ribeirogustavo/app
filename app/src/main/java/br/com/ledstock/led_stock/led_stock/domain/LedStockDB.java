@@ -27,7 +27,7 @@ public class LedStockDB extends SQLiteOpenHelper {
 
     private static final String NOME_BANCO = "LedStock.SQLite";
     private static final String TAG = "sql";
-    private static final int VERSAO_BANCO = 2;
+    private static final int VERSAO_BANCO = 3;
 
     public LedStockDB(Context context) {
         super(context, NOME_BANCO, null, VERSAO_BANCO);
@@ -71,7 +71,7 @@ public class LedStockDB extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("create table if not exists orcamento (_id_orcamento integer primary key autoincrement, _id_orcamento_remote integer default null, _id_cliente integer default null, _id_client_remote integer default null, orcamento text, data text, psm integer default 0, pcm integer default 0, edited text, data_pedido text default null, enable text default 1);");
         //Cria a tabela list of Orcamento
         sqLiteDatabase.execSQL("create table if not exists list_of_orcamento (_id_list_of_orcamento integer primary key autoincrement, _id_list_of_orcamento_remote integer default null, _id_orcamento integer default null, _id_orcamento_remote integer default null, _id_led integer default null, _id_led_remote integer default null, key_table text , _id_hands_on integer default null, _id_hands_on_remote integer default null, quantidade integer, _value double default 0, descount double default 0, enable text default 1);");
-    }
+  }
 
     /***********************************************************************************************
      * FUNÇÕES RELACIONADAS AOS CLIENTES
