@@ -58,9 +58,6 @@ public class Pedido extends android.support.v4.app.Fragment  {
                 new View.OnClickListener(){
                     @Override
                     public void onClick(View view) {
-                        //Intent intent = new Intent(getActivity(), Activity_add.class);
-                        //  intent.putExtra("add_fragment","fragment_add_estudo");
-                        // startActivity(intent);
                         Dialog_Estudo_fragment.show(getChildFragmentManager(), 0, 0, getActivity());
                     }
                 }
@@ -187,13 +184,7 @@ public class Pedido extends android.support.v4.app.Fragment  {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // if (item.getItemId() == R.id.pesquisar) {
-        //   Toast.makeText(getActivity(), "Abrir campo pesquisa !", Toast.LENGTH_SHORT).show();
-        //finish();
-        //  }
         return super.onOptionsItemSelected(item);
     }
-
-
 }
 

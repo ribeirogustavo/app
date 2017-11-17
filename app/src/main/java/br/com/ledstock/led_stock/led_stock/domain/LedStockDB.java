@@ -2916,12 +2916,48 @@ public class LedStockDB extends SQLiteOpenHelper {
     public Cursor getPesquisarClienteActivityPedidos(String s) {
         SQLiteDatabase db = getReadableDatabase();
         try {
-            Cursor c = db.query("estudo " +
-                            "INNER JOIN clientes ON " +
-                            "CASE WHEN (estudo._id_client_remote is null OR clientes._id_client_remote is null) THEN " +
-                            "estudo._id_cliente = clientes._id_cliente ELSE " +
-                            "estudo._id_client_remote = clientes._id_client_remote END ",
-                    new String[]{"estudo._id_estudo, estudo.descricao, clientes.nome as cliente, estudo.data, estudo.data_pedido, estudo.psm, estudo.pcm, estudo._id_estudo_remote"}, "nome like ? AND estudo.enable = ? AND (estudo.psm = ? OR estudo.pcm = ?)", new String[]{"%" + s + "%", "1", "1", "1"}, null, null, "nome", null);
+            Cursor c = db.query("estudo, clientes",
+                    new String[]{"1 as `table`, " +
+                            "estudo._id_estudo as _id_table, " +
+                            "estudo.descricao, " +
+                            "clientes._id_cliente as _id_cliente, " +
+                            "estudo.`data`, " +
+                            "estudo.data_pedido as data_pedido, " +
+                            "estudo.psm as psm, " +
+                            "estudo.pcm as pcm, " +
+                            "estudo.enable, " +
+                            "clientes.nome as cliente, " +
+                            "estudo._id_estudo_remote as id_remote "},
+                    "estudo.enable = ? AND " +
+                            "CASE " +
+                            "WHEN estudo._id_client_remote is null " +
+                            "THEN estudo._id_cliente = clientes._id_cliente " +
+                            "ELSE estudo._id_client_remote = clientes._id_client_remote " +
+                            "END " +
+                            "AND (estudo.psm = ? OR estudo.pcm = ?) AND clientes.nome like ? " +
+                            "UNION " +
+                            "SELECT " +
+                            "2 as `table`, " +
+                            "orcamento._id_orcamento as _id_table, " +
+                            "clientes.nome as descricao, " +
+                            "clientes._id_cliente as _id_cliente, " +
+                            "orcamento.`data`, " +
+                            "orcamento.data_pedido as data_pedido, " +
+                            "orcamento.psm, " +
+                            "orcamento.pcm, " +
+                            "orcamento.enable, " +
+                            "clientes.nome as cliente, " +
+                            "orcamento._id_orcamento_remote as id_remote " +
+                            "from orcamento, clientes " +
+                            "WHERE " +
+                            "orcamento.enable = ? AND " +
+                            "CASE " +
+                            "WHEN orcamento._id_client_remote is null " +
+                            "THEN orcamento._id_cliente = clientes._id_cliente " +
+                            "ELSE orcamento._id_client_remote = clientes._id_client_remote " +
+                            "END " +
+                            "AND (orcamento.psm = ? OR orcamento.pcm = ?) AND clientes.nome like ?",
+                    new String[]{"1", "1", "1", "%" + s + "%" ,"1", "1", "1", "%" + s + "%"}, null, null, "descricao", null);
             c.moveToFirst();
             if (c.getCount() > 0) {
                 return c;
@@ -3201,7 +3237,7 @@ public class LedStockDB extends SQLiteOpenHelper {
                             "CASE WHEN (orcamento._id_client_remote is null OR clientes._id_client_remote is null) THEN " +
                             "orcamento._id_cliente = clientes._id_cliente ELSE " +
                             "orcamento._id_client_remote = clientes._id_client_remote END ",
-                    new String[]{"orcamento.*,  clientes.nome as cliente"}, "nome like ? AND orcamento.enable = ?", new String[]{"%" + s + "%", "1"}, null, null, "nome", null);
+                    new String[]{"orcamento.data, orcamento._id_orcamento_remote as id_remote,  clientes.nome as cliente"}, "nome like ? AND orcamento.enable = ?", new String[]{"%" + s + "%", "1"}, null, null, "nome", null);
             c.moveToFirst();
             if (c.getCount() > 0) {
                 return c;
