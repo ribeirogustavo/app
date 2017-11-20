@@ -3005,7 +3005,7 @@ public class LedStockDB extends SQLiteOpenHelper {
     public Cursor SelectOrcamentoByID(String id) {
         SQLiteDatabase db = getReadableDatabase();
         try {
-            Cursor c = db.query("orcamento", null, "_id_orcamento=?", new String[]{id}, null, null, null, null);
+            Cursor c = db.query("orcamento", null, "_id_orcamento = ?", new String[]{id}, null, null, null, null);
             c.moveToFirst();
             if (c.getCount() > 0) {
                 return c;
@@ -3087,7 +3087,7 @@ public class LedStockDB extends SQLiteOpenHelper {
     public long SelectOrcamentoRemoteIDById(String id) {
         SQLiteDatabase db = getReadableDatabase();
         try {
-            Cursor c = db.query("orcamento", new String[]{"_id_orcamento_remote"}, "_id_orcamento=?", new String[]{id}, null, null, null, null);
+            Cursor c = db.query("orcamento", new String[]{"_id_orcamento_remote"}, "_id_orcamento = ?", new String[]{id}, null, null, null, null);
             c.moveToFirst();
             if (c.getCount() > 0) {
                 if (c.getString(c.getColumnIndex("_id_orcamento_remote")) != null) {
@@ -3256,6 +3256,29 @@ public class LedStockDB extends SQLiteOpenHelper {
             Cursor c = db.query("orcamento, clientes", new String[]{"orcamento.*,clientes.nome as cliente"}, "enable=? AND CASE WHEN orcamento._id_client_remote is null THEN orcamento._id_cliente = clientes._id_cliente ELSE orcamento._id_client_remote = clientes._id_client_remote END AND _id_orcamento = ?", new String[]{"1", id}, null, null, "orcamento", null);
             c.moveToFirst();
             return c.getString(c.getColumnIndex("cliente"));
+        } finally {
+            db.close();
+        }
+    }
+
+    public Cursor SelectClienteOfOrcamento(String id_orcamento) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor c = db.query("orcamento " +
+                            "INNER JOIN clientes  ON " +
+                            "CASE WHEN (orcamento._id_client_remote is null OR clientes._id_client_remote is null) THEN " +
+                            "orcamento._id_cliente = clientes._id_cliente ELSE " +
+                            "orcamento._id_client_remote = clientes._id_client_remote END",
+                    new String[]{"nome, endereco, numero,comp, bairro, cidade, email, email2, tel, tel2, contato"},
+                    "orcamento._id_orcamento = ? AND orcamento.enable = ?",
+                    new String[]{id_orcamento, "1"},
+                    null, null, null, null);
+            c.moveToFirst();
+            if (c.getCount() > 0) {
+                return c;
+            } else {
+                return null;
+            }
         } finally {
             db.close();
         }
@@ -3660,5 +3683,64 @@ public class LedStockDB extends SQLiteOpenHelper {
         }
     }
 
+    /***********************************************************************************************
+     * FUNÇÕES RELACIONADAS AO RELATÓRIO DO ORÇAMENTO
+     ***********************************************************************************************/
+
+    public Cursor SelectRelatorioOrcamento(String id_orcamento, String id_orcamento_remote, int control) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = null;
+        try {
+            switch (control) {
+                //Led
+                case 1: {
+
+                    c = db.query("list_of_orcamento " +
+                                    "LEFT JOIN led_solution ON CASE WHEN list_of_orcamento._id_led_remote is null  THEN list_of_orcamento._id_led = led_solution._id_led ELSE list_of_orcamento._id_led_remote = led_solution._id_led_remote END " +
+                                    "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            new String[]{"list_of_orcamento.quantidade as quantidade, led_solution.valor as valor, list_of_orcamento.descount as desconto, led_solution.descricao, led_solution.valor - (list_of_orcamento.descount/100 * led_solution.valor) as valor_com_desconto"},
+                            //"WHERE" +
+                            "list_of_orcamento.enable = ? AND " +
+                                    "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                                    "key_table = ? "
+                            , new String[]{"1", id_orcamento, id_orcamento_remote, Integer.toString(control)}, null, null, null, null);
+                }
+                break;
+                //HandsOn
+                case 2: {
+                    c = db.query("list_of_orcamento " +
+                                    "LEFT JOIN handson ON CASE WHEN list_of_orcamento._id_hands_on_remote is null  THEN list_of_orcamento._id_hands_on = handson._id_handson ELSE list_of_orcamento._id_hands_on_remote = handson._id_handson_remote END " +
+                                    "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            new String[]{"list_of_orcamento.quantidade as quantidade, handson.valor as valor, list_of_orcamento.descount as desconto, handson.descricao as descricao, handson.valor - (list_of_orcamento.descount/100 * handson.valor) as valor_com_desconto"},
+                            //"WHERE" +
+                            "list_of_orcamento.enable = ? AND " +
+                                    "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                                    "key_table = ? "
+                            , new String[]{"1", id_orcamento, id_orcamento_remote, Integer.toString(control)}, null, null, null, null);
+                }
+                break;
+                //Desconto Total
+                case 3: {
+                    c = db.query("list_of_orcamento " +
+                                    "LEFT JOIN orcamento ON CASE WHEN list_of_orcamento._id_orcamento_remote is null  THEN list_of_orcamento._id_orcamento = orcamento._id_orcamento ELSE list_of_orcamento._id_orcamento_remote = orcamento._id_orcamento_remote END ",
+                            new String[]{"list_of_orcamento.descount as descount"},
+                            //"WHERE" +
+                            "list_of_orcamento.enable = ? AND " +
+                                    "CASE WHEN orcamento._id_orcamento_remote is null THEN orcamento._id_orcamento = ? ELSE orcamento._id_orcamento_remote = ? END AND " +
+                                    "key_table = ? "
+                            , new String[]{"1", id_orcamento, id_orcamento_remote, Integer.toString(control)}, null, null, null, null);
+                }
+                break;
+
+            }
+            if (c != null) {
+                c.moveToFirst();
+            }
+
+            return c;
+        } finally {
+            db.close();
+        }
+    }
 
 }

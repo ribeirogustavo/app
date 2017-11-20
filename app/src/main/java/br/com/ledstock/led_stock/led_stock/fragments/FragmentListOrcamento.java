@@ -255,6 +255,9 @@ public class FragmentListOrcamento extends android.support.v4.app.Fragment {
                             Toast.makeText(getActivity(), "ítens Excluidos com Sucesso !", Toast.LENGTH_SHORT).show();
                         }
                     }
+                    Intent intent = new Intent();
+                    intent.setAction("REFRESH_ITENS_ORCAMENTO");
+                    getActivity().sendBroadcast(intent);
                     //snack(recyclerView, "Carros excluidos com sucesso !");
                 }
                 //Encerra o actionMode mode
@@ -272,6 +275,10 @@ public class FragmentListOrcamento extends android.support.v4.app.Fragment {
                 }
                 //Notifica o RecyclerView
                 recyclerView.getAdapter().notifyDataSetChanged();
+
+                Intent intent = new Intent();
+                intent.setAction("REFRESH_ITENS_ORCAMENTO");
+                getActivity().sendBroadcast(intent);
             }
 
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {

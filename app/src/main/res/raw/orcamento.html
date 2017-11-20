@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Relatório | LedStock</title>
+        <!--<link rel='stylesheet' type='text/css' href='relatorio.css'/>-->
+        <style>
+            *{
+                padding: 0;
+                font-family:"Calibri (Body)";
+            }
+
+            .table_info{
+                table-layout: auto;
+                width: 52%;                
+            }
+
+            .table_info thead tr .title{
+                background-color: #cccccc;
+                padding-top: 2px;
+                padding-bottom: 2px;
+                padding-left: 3px;
+            }
+
+            .table_info tbody{
+                padding-top: 8px;
+                margin-top: 10px;
+            }
+
+            .table_info tbody .td_info{
+                width: 20px !important;
+            }
+
+            .table_info thead tr .first_line{
+                padding-top: 18px;
+                width: 40px;
+            }
+
+            .table_content{
+                margin-top: 2px;
+                table-layout: auto;
+                width: 88%;
+            }
+
+            .table_content thead{
+                text-align: center;
+                font-family:"Calibri (Body)";
+            }
+
+            .table_content thead tr td{
+                border: solid #000 1px;
+            }
+
+            .table_content thead tr .noborder{
+                border-top: 0px;
+                border-left:  0px;
+
+            }
+
+            .table_content thead .header{
+                background-color: #00B050;
+            }
+
+            .table_content thead .header td{
+                padding-top: 3px;
+                padding-bottom: 3px;
+                font-size: 13px;
+            }
+
+            .align_center{
+                text-align: center;
+                //width: 95px;
+            }
+
+            .align_left{
+                text-align: left;
+                //width: 820px;
+                padding-left: 3px;
+            }
+
+            .align_right{
+                text-align: right;
+                //width: 85px;
+                padding-right: 3px;
+            }
+
+            .table_content tbody tr td{
+                font-size: 12px;
+                padding-top: 4px;
+                padding-bottom: 4px;
+            }
+
+            .table_content tbody tr .commun{
+                border-left: solid #000 1px; 
+                border-bottom: solid #000 1px;
+            }
+
+            .mdo{
+                margin-top: 15px !important;
+                width: 75% !important;
+            }
+
+            #tot_tot{
+                margin-top: 15px !important;
+                width: 25% !important;
+            }
+
+            .last_content{
+                margin-top: 20px;
+            }
+
+            .pdtop{
+                padding-top: 15px;
+            }
+
+            .table_content tfoot tr td{
+                font-size: 12px;
+                padding-top: 4px;
+                padding-bottom: 4px;
+            }
+
+            .table_content tbody tr .border_thick_top{
+                border-top: solid #000 2px;
+            }
+
+            .table_content tbody tr .border_thick_bottom{
+                border-bottom: solid #000 2px;
+            }
+
+            .table_content tbody tr .border_thick_left{
+                border-left: solid #000 3px;
+            }
+
+            .table_content tbody tr .border_thick_right{
+                border-right: solid #000 3px;
+            }
+
+            .table_content thead tr .border_thick{
+                border: solid #000 3px;
+            }
+
+            .table_content thead tr .border_thick_top{
+                border-top: solid #000 3px;
+            }
+
+            .table_content thead tr .border_thick_bottom{
+                border-bottom: solid #000 3px;
+            }
+
+            .table_content thead tr .border_thick_left{
+                border-left: solid #000 3px;
+            }
+
+            .table_content thead tr .border_thick_right{
+                border-right: solid #000 3px;
+            }
+
+            .table_content tfoot tr .border_thick{
+                border: solid #000 3px;
+            }
+
+            .table_content tfoot tr .border_thick_top_total{
+                border-top: solid #000 3px;
+            }
+
+            .table_content tfoot tr .border_thick_top{
+                border-top: solid #000 2px;
+            }
+
+            .table_content tfoot tr .border_thick_bottom{
+                border-bottom: solid #000 3px;
+            }
+
+            .table_content tfoot tr .border_thick_left{
+                border-left: solid #000 3px;
+            }
+
+            .table_content tfoot tr .border_thick_right{
+                border-right: solid #000 3px;
+            }
+
+            .table_content tfoot tr .cell_null{
+                background-color: #000;
+            }
+
+
+            .table_content tfoot tr td{
+                background-color: #00B050;
+            }
+
+            .table_content tfoot tr .total{
+                font-size: 14px;
+            }
+
+            .title{
+                padding: 5px 0px 5px 0px;
+            }
+
+            .short{
+                width: 45px !important;
+            }
+
+            .medium{
+                //width: 420px !important;
+            }
+
+            .long{
+                width: 130px !important;
+            }
+
+            .extra_long{
+                width: 145px !important;
+            } 
+
+            .mao{
+                width: 210px;  
+            }
+
+            .orc{
+                width: 160px;
+            }
+
+            .est{
+                width: 310px;
+            }    
+            
+            .contatcs tbody tr td{
+                padding-top: 3px;
+                padding-bottom: 3px;
+            }
+			
+			.last_content tbody tr td{
+				padding-top: 3px;
+                padding-bottom: 3px;
+			}
+        </style>
+    </head>
+    <body>
+        <table class="table_info" cellspacing="0">
+            <thead>
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="title">Orçamento de Lâmpadas LED</td>
+                </tr>
+            </thead>
+        </table>
+        <table class="contatcs" cellspacing="0">
+            <tbody>
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>CLIENTE: </td>
+                    <td>{CLIENTE}</td>
+                </tr>
+                <tr>
+                    <td>ENDEREÇO: </td>
+                    <td>{ENDERECO}</td>
+                </tr>
+                <tr>
+                    <td>CONTATO: </td>
+                    <td>{CONTATO}</td>
+                </tr>
+                <tr>
+                    <td>TELEFONE: </td>
+                    <td>{TELEFONE}</td>
+                </tr>
+                <tr>
+                    <td>E-MAIL: </td>
+                    <td>{EMAIL}</td>
+                </tr>
+                <tr>                        
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>                        
+                    <td>Data do Orçamento:</td>
+                    <td>{DATAORCAMENTO}</td>
+                </tr>
+            </tbody>            
+        </table>        
+        <table class="table_content" cellspacing="0">
+            <thead>
+                <tr class="header">
+                    <td colspan="4" class="border_thick_top  border_thick_left border_thick_right">Solução LED</td>
+                </tr>
+                <tr class="header">
+                    <td class="border_thick_bottom border_thick_top long">Solução LED</td>
+                    <td class="border_thick_bottom border_thick_top short">Qnt.</td>
+                    <td class="border_thick_bottom border_thick_top short">Valor Uni.</td>
+                    <td class="border_thick_right border_thick_bottom border_thick_top short">Valor</td>
+                </tr>
+            </thead>
+            <tbody>
+                {CONTEUDO_LEDS}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="border_thick_left border_thick_right border_thick_bottom border_thick_top total"><b>TOTAL</b></td>
+                    <td class="align_center border_thick_bottom border_thick_right border_thick_top"><b>{QNT}</b></td>
+                    <td colspan="2" class="align_right border_thick_bottom border_thick_right border_thick_top"><b>{VALOR}</b></td>
+                </tr>
+            </tfoot>
+        </table>
+			{TABELAMAODEOBRA}
+            {TABELATOTAL}
+        <table class="last_content" cellspacing="0">
+            <tbody>
+                <tr>                    
+                    <td class="pdtop">ORÇAMENTOS LEDSTOCK.</td>
+                </tr>
+                <tr>                    
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>                    
+                    <td>RESPONSÁVEL: {RESPONSAVEL}</td>
+                </tr>                   
+                <tr>                    
+                    <td>CONTATO: (11) 96584-1313 (CEL. NEXTEL, WHATSAPP)</td>
+                </tr>
+                <tr>                    
+                    <td>TEL.: (11) 4114-3177 / (11) 4114-3781</td>
+                </tr>
+                <tr>                    
+                    <td>E-MAIL.: sac@ledstock.com.br</td>
+                </tr>
+                <tr>                    
+                    <td class="pdtop">Obs.: *O orçamento possui validade de 30 dias.</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

@@ -31,6 +31,7 @@ public class Dialog_AplicarDesconto_fragment extends DialogFragment {
     private static Activity activity;
     private static String ID_ORCAMENTO;
     private static long item;
+    String desconto_db;
 
     public Dialog_AplicarDesconto_fragment() {
         // Required empty public constructor
@@ -91,6 +92,7 @@ public class Dialog_AplicarDesconto_fragment extends DialogFragment {
         if (c != null) {
             if (c.getCount() > 0) {
                 String desc = c.getString(c.getColumnIndex("descount"));
+                desconto_db = desc;
                 if (desc != null) {
                     desconto.setText(desc);
                     item = c.getLong(c.getColumnIndex("_id"));
@@ -111,7 +113,7 @@ public class Dialog_AplicarDesconto_fragment extends DialogFragment {
                         String descount = desconto.getText().toString();
                         String id_orc_rem = null;
 
-                        if (!descount.equals("")) {
+                        if (!descount.equals("") || (descount.equals("") && !desconto_db.equals(""))) {
                             if (item != 0) {
                                 db.DeleteItensOfOrcamento(String.valueOf(item));
                                 updateremote.DeleteItensOfOrcamentoRemote(String.valueOf(item));
@@ -119,6 +121,9 @@ public class Dialog_AplicarDesconto_fragment extends DialogFragment {
 
                             if (id_orcamento_remote != 0){
                                 id_orc_rem = String.valueOf(id_orcamento_remote);
+                            }
+                            if (descount.equals("")){
+                                descount = "0";
                             }
                             Long id_itens = db.Insert_Itens_Of_Orcamento(null,
                                     ID_ORCAMENTO, id_orc_rem,
